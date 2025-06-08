@@ -3,6 +3,7 @@ import "./App.css";
 import Layout from "./Layout";
 import Home from "./pages/Home";
 import Product from "./pages/Product";
+import Transaction from "./pages/Transaction";
 import { Toaster } from "react-hot-toast"; // ✅ import
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 
@@ -16,6 +17,7 @@ function App() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/product" element={<Product />} />
+          <Route path="/transaction" element={<Transaction />} />
         </Routes>
       </Layout>
     </Router>

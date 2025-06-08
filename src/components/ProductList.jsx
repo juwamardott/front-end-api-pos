@@ -2,65 +2,411 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { motion } from "framer-motion";
 
-export default function ProductList() {
+export default function ProductList({ reload }) {
   const [products, setProducts] = useState([]);
+  const [filteredProducts, setFilteredProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+  const [viewMode, setViewMode] = useState("grid"); // 'grid' or 'list'
+  const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
+    setLoading(true);
+    setError(false);
     axios
       .get("http://127.0.0.1:8000/api/products/")
       .then((res) => {
         setProducts(res.data);
+        setFilteredProducts(res.data);
         setLoading(false);
       })
       .catch((err) => {
         console.error("Gagal mengambil data produk:", err);
+        setError(true);
         setLoading(false);
       });
-  }, []);
+  }, [reload]);
+
+  // Filter products berdasarkan search query
+  useEffect(() => {
+    if (!searchQuery.trim()) {
+      setFilteredProducts(products);
+    } else {
+      const filtered = products?.data?.filter(
+        (product) =>
+          product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          product.description
+            ?.toLowerCase()
+            .includes(searchQuery.toLowerCase()) ||
+          product.sku?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          product.category?.category_name
+            ?.toLowerCase()
+            .includes(searchQuery.toLowerCase())
+      );
+      setFilteredProducts({ ...products, data: filtered || [] });
+    }
+  }, [searchQuery, products]);
+
+  // Handle search input change
+  const handleSearchChange = (e) => {
+    setSearchQuery(e.target.value);
+  };
+
+  // Clear search
+  const clearSearch = () => {
+    setSearchQuery("");
+  };
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center py-20 poppins-medium">
-        <div className="w-10 h-10 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
-        <span className="ml-3 text-indigo-600 text-lg font-medium">
-          Loading data...
-        </span>
+      <div className="flex flex-col justify-center items-center py-20 poppins-medium">
+        <div className="relative">
+          <div className="w-16 h-16 border-4 border-indigo-200 rounded-full animate-spin"></div>
+          <div className="w-16 h-16 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin absolute top-0 left-0"></div>
+        </div>
+        <div className="mt-6 text-center">
+          <p className="text-indigo-600 text-lg font-semibold">
+            Loading Products
+          </p>
+          <p className="text-gray-500 text-sm mt-1">Please wait a moment...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !products?.data?.length) {
+    return (
+      <div className="text-center py-20 poppins-medium">
+        <div className="max-w-md mx-auto">
+          <div className="bg-gray-100 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-6">
+            <svg
+              className="w-10 h-10 text-gray-400"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={1.5}
+                d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
+              />
+            </svg>
+          </div>
+          <h3 className="text-xl font-semibold text-gray-800 mb-2">
+            No Products Found
+          </h3>
+          <p className="text-gray-500 mb-6">
+            There are no products available at the moment.
+          </p>
+          <button
+            onClick={() => window.location.reload()}
+            className="bg-indigo-600 text-white px-6 py-2 rounded-lg hover:bg-indigo-700 transition-colors"
+          >
+            Refresh
+          </button>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="grid grid-cols-2  md:grid-cols-3 gap-4 sm:gap-6 poppins-medium">
-      {products.data.map((product, index) => (
-        <motion.div
-          key={product.id}
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: index * 0.05, duration: 0.3 }}
-          className="bg-white p-3 sm:p-4 rounded-xl shadow hover:shadow-lg transition"
-        >
-          <img
-            src={`https://placehold.co/300x200?text=${encodeURIComponent(
-              product.name
-            )}`}
-            alt={product.name}
-            className="w-full h-48 md:h-32 object-contain mb-3"
+    <div className="poppins-medium">
+      {/* Search Bar */}
+      <div className="mb-6">
+        <div className="relative">
+          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <svg
+              className="h-5 w-5 text-gray-400"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+              />
+            </svg>
+          </div>
+          <input
+            type="text"
+            placeholder="Search products by name, description, SKU, or category..."
+            value={searchQuery}
+            onChange={handleSearchChange}
+            className="w-full pl-10 pr-12 py-3 border-2 border-gray-200 rounded-xl focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/20 transition-all duration-200 outline-none"
           />
-          <h4 className="text-sm font-semibold text-indigo-600 line-clamp-1">
-            {product.name}
-          </h4>
-          <p className="text-sm text-gray-500 capitalize mb-1">
-            {product.category?.category_name ?? "Tanpa Kategori"}
+          {searchQuery && (
+            <button
+              onClick={clearSearch}
+              className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 transition-colors"
+            >
+              <svg
+                className="h-5 w-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            </button>
+          )}
+        </div>
+        {searchQuery && (
+          <p className="text-sm text-gray-600 mt-2">
+            {filteredProducts.data?.length === 0
+              ? "No products found"
+              : `Found ${filteredProducts.data?.length || 0} product${
+                  filteredProducts.data?.length !== 1 ? "s" : ""
+                } matching "${searchQuery}"`}
           </p>
-          <p className="text-sm text-gray-700 line-clamp-2 mb-2">
-            {product.description}
+        )}
+      </div>
+
+      {/* Header with View Toggle */}
+      <div className="flex justify-between items-center mb-6">
+        <div>
+          <p className="text-gray-600 text-sm">
+            Showing {filteredProducts.data?.length || 0} product
+            {(filteredProducts.data?.length || 0) !== 1 ? "s" : ""}
+            {searchQuery && ` for "${searchQuery}"`}
           </p>
-          <p className="font-bold text-green-600 text-sm sm:text-base">
-            Rp {product.price.toLocaleString("id-ID")}
-          </p>
-        </motion.div>
-      ))}
+        </div>
+        <div className="flex bg-gray-100 rounded-lg p-1">
+          <button
+            onClick={() => setViewMode("grid")}
+            className={`p-2 rounded-md transition-colors ${
+              viewMode === "grid"
+                ? "bg-white text-indigo-600 shadow-sm"
+                : "text-gray-500 hover:text-gray-700"
+            }`}
+          >
+            <svg
+              className="w-4 h-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"
+              />
+            </svg>
+          </button>
+          <button
+            onClick={() => setViewMode("list")}
+            className={`p-2 rounded-md transition-colors ${
+              viewMode === "list"
+                ? "bg-white text-indigo-600 shadow-sm"
+                : "text-gray-500 hover:text-gray-700"
+            }`}
+          >
+            <svg
+              className="w-4 h-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M4 6h16M4 10h16M4 14h16M4 18h16"
+              />
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      {/* No Results Message */}
+      {filteredProducts.data?.length === 0 && searchQuery && (
+        <div className="text-center py-16">
+          <div className="max-w-md mx-auto">
+            <div className="bg-gray-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+              <svg
+                className="w-8 h-8 text-gray-400"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                />
+              </svg>
+            </div>
+            <h3 className="text-lg font-semibold text-gray-800 mb-2">
+              No products found
+            </h3>
+            <p className="text-gray-500 mb-4">
+              We couldn't find any products matching "{searchQuery}". Try
+              searching with different keywords.
+            </p>
+            <button
+              onClick={clearSearch}
+              className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors text-sm"
+            >
+              Clear Search
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Grid View */}
+      {viewMode === "grid" && filteredProducts.data?.length > 0 && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {filteredProducts.data.map((product, index) => (
+            <motion.div
+              key={product.id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.05, duration: 0.4 }}
+              className="group bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100 hover:border-indigo-200"
+            >
+              <div className="relative overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100">
+                <img
+                  src={`https://placehold.co/400x300?text=${encodeURIComponent(
+                    product.name
+                  )}`}
+                  alt={product.name}
+                  className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
+                />
+                <div className="absolute top-3 right-3">
+                  <span className="bg-white/90 backdrop-blur-sm px-2 py-1 rounded-full text-xs font-medium text-gray-700">
+                    Stock: {product.stock || 0}
+                  </span>
+                </div>
+                {product.stock <= 5 && (
+                  <div className="absolute top-3 left-3">
+                    <span className="bg-red-500 text-white px-2 py-1 rounded-full text-xs font-medium">
+                      Low Stock
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              <div className="p-5">
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="bg-indigo-100 text-indigo-700 text-xs px-2 py-1 rounded-full font-medium">
+                    {product.category?.category_name || "No Category"}
+                  </span>
+                </div>
+
+                <h3 className="font-bold text-gray-900 text-lg mb-2 line-clamp-1 group-hover:text-indigo-600 transition-colors">
+                  {product.name}
+                </h3>
+
+                <p className="text-gray-600 text-sm line-clamp-2 mb-4 leading-relaxed">
+                  {product.description || "No description available"}
+                </p>
+
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-2xl font-bold text-green-600">
+                      Rp {product.price.toLocaleString("id-ID")}
+                    </p>
+                    {product.sku && (
+                      <p className="text-xs text-gray-500 mt-1">
+                        SKU: {product.sku}
+                      </p>
+                    )}
+                  </div>
+                  <button className="bg-indigo-600 hover:bg-indigo-700 text-white p-2 rounded-lg transition-colors">
+                    <svg
+                      className="w-4 h-4"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                      />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      )}
+
+      {/* List View */}
+      {viewMode === "list" && filteredProducts.data?.length > 0 && (
+        <div className="space-y-4">
+          {filteredProducts.data.map((product, index) => (
+            <motion.div
+              key={product.id}
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: index * 0.03, duration: 0.4 }}
+              className="bg-white rounded-xl shadow-sm hover:shadow-md transition-all duration-300 border border-gray-100 hover:border-indigo-200"
+            >
+              <div className="flex items-center p-4 gap-4">
+                <div className="flex-shrink-0">
+                  <img
+                    src={`https://placehold.co/120x120?text=${encodeURIComponent(
+                      product.name
+                    )}`}
+                    alt={product.name}
+                    className="w-20 h-20 object-cover rounded-lg bg-gradient-to-br from-gray-50 to-gray-100"
+                  />
+                </div>
+
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <h3 className="font-bold text-gray-900 text-lg truncate">
+                          {product.name}
+                        </h3>
+                        <span className="bg-indigo-100 text-indigo-700 text-xs px-2 py-1 rounded-full font-medium">
+                          {product.category?.category_name || "No Category"}
+                        </span>
+                      </div>
+
+                      <p className="text-gray-600 text-sm line-clamp-2 mb-2">
+                        {product.description || "No description available"}
+                      </p>
+
+                      <div className="flex items-center gap-4 text-sm text-gray-500">
+                        {product.sku && <span>SKU: {product.sku}</span>}
+                        <span>Stock: {product.stock || 0}</span>
+                        {product.stock <= 5 && (
+                          <span className="text-red-500 font-medium">
+                            Low Stock
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="text-right ml-4">
+                      <p className="text-2xl font-bold text-green-600 mb-2">
+                        Rp {product.price.toLocaleString("id-ID")}
+                      </p>
+                      <button className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg transition-colors text-sm font-medium">
+                        Add to Cart
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

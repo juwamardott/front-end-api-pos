@@ -4,6 +4,12 @@ import AddProductModal from "../components/AddProductModal";
 
 export default function Product() {
   const [showModal, setShowModal] = useState(false);
+  const [reload, setReload] = useState(false);
+
+  const handleSuccess = () => {
+    setReload((prev) => !prev); // toggle, agar useEffect ke-trigger
+    setShowModal(false);
+  };
 
   return (
     <div>
@@ -17,9 +23,15 @@ export default function Product() {
         </button>
       </div>
 
-      <ProductList />
+      {showModal && (
+        <AddProductModal
+          onClose={() => setShowModal(false)}
+          onSuccess={handleSuccess}
+        />
+      )}
+      <ProductList reload={reload} />
 
-      {showModal && <AddProductModal onClose={() => setShowModal(false)} />}
+      {/* {showModal && <AddProductModal onClose={() => setShowModal(false)} />} */}
     </div>
   );
 }
