@@ -1,51 +1,76 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
+import axios from "axios";
 
 export default function Home() {
-  const [stats, setStats] = useState({
-    totalSales: 12450000,
-    todayOrders: 47,
-    totalProducts: 156,
-    lowStockItems: 8,
-  });
+  const [stats, setStats] = useState(null);
+  const [statsLoading, setStatsLoading] = useState(true);
+  const [statsError, setStatsError] = useState("");
 
-  const [recentOrders] = useState([
-    {
-      id: "ORD-001",
-      customer: "John Doe",
-      amount: 125000,
-      status: "completed",
-      time: "10:30",
-    },
-    {
-      id: "ORD-002",
-      customer: "Jane Smith",
-      amount: 87500,
-      status: "pending",
-      time: "10:15",
-    },
-    {
-      id: "ORD-003",
-      customer: "Bob Johnson",
-      amount: 245000,
-      status: "completed",
-      time: "09:45",
-    },
-    {
-      id: "ORD-004",
-      customer: "Alice Brown",
-      amount: 156000,
-      status: "processing",
-      time: "09:20",
-    },
-  ]);
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const response = await axios.get(
+          "http://127.0.0.1:8000/api/reports/daily-sales"
+        );
+        if (response.data) {
+          setStats(response.data);
+          // console.log(response.data);
+        } else {
+          // setStatsError("Format data tidak sesuai");
+        }
+      } catch (err) {
+        // setStatsError("Gagal mengambil data statistik");
+        console.error(err);
+      } finally {
+        // setStatsLoading(false);
+      }
+    };
 
-  const [topProducts] = useState([
-    { name: "Nasi Gudeg", sold: 23, revenue: 460000 },
-    { name: "Es Teh Manis", sold: 45, revenue: 225000 },
-    { name: "Ayam Bakar", sold: 18, revenue: 540000 },
-    { name: "Soto Ayam", sold: 32, revenue: 480000 },
-  ]);
+    fetchStats();
+  }, []);
+
+  const [transactions, setTransactions] = useState([]);
+
+  useEffect(() => {
+    const getTransactions = async () => {
+      try {
+        const response = await axios.get(
+          "http://127.0.0.1:8000/api/transactions"
+        );
+        if (response.data && response.data.data) {
+          setTransactions(response.data.data);
+        } else {
+          // setError("Data format tidak sesuai");
+        }
+      } catch (err) {
+        // setError("Gagal mengambil data transaksi");
+        console.error(err);
+      } finally {
+        // setLoading(false);
+      }
+    };
+
+    getTransactions();
+  }, []);
+
+  const [topProducts, setTopProducts] = useState([]);
+  const [topProductsLoading, setTopProductsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchTopProducts = async () => {
+      try {
+        const response = await axios.get("http://127.0.0.1:8000/api/products");
+        setTopProducts(response.data.data);
+      } catch (error) {
+        console.error("Gagal mengambil data produk:", error);
+      } finally {
+        setTopProductsLoading(false);
+      }
+    };
+
+    fetchTopProducts();
+  }, []);
 
   return (
     <div className="space-y-6 poppins-medium">
@@ -84,7 +109,9 @@ export default function Home() {
             <div>
               <p className="text-blue-100 text-sm">Total Sales</p>
               <p className="text-2xl font-bold">
-                Rp {stats.totalSales.toLocaleString("id-ID")}
+                {stats?.data?.total_sales
+                  ? `Rp ${stats.data.total_sales.toLocaleString("id-ID")}`
+                  : "Loading..."}
               </p>
               <p className="text-blue-100 text-xs mt-1">
                 +12.5% from yesterday
@@ -117,7 +144,11 @@ export default function Home() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-green-100 text-sm">Today Orders</p>
-              <p className="text-2xl font-bold">{stats.todayOrders}</p>
+              <p className="text-2xl font-bold">
+                {stats?.data?.total_order
+                  ? `Rp ${stats.data.total_order.toLocaleString("id-ID")}`
+                  : "Loading..."}
+              </p>
               <p className="text-green-100 text-xs mt-1">
                 +8.2% from yesterday
               </p>
@@ -149,7 +180,11 @@ export default function Home() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-purple-100 text-sm">Total Products</p>
-              <p className="text-2xl font-bold">{stats.totalProducts}</p>
+              <p className="text-2xl font-bold">
+                {stats?.data?.total_product
+                  ? `Rp ${stats.data.total_product.toLocaleString("id-ID")}`
+                  : "Loading..."}
+              </p>
               <p className="text-purple-100 text-xs mt-1">
                 Across all categories
               </p>
@@ -181,7 +216,11 @@ export default function Home() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-orange-100 text-sm">Low Stock Alert</p>
-              <p className="text-2xl font-bold">{stats.lowStockItems}</p>
+              <p className="text-2xl font-bold">
+                {stats?.data?.low_stock
+                  ? `Rp ${stats.data.low_stock.toLocaleString("id-ID")}`
+                  : "Loading..."}
+              </p>
               <p className="text-orange-100 text-xs mt-1">Items need restock</p>
             </div>
             <div className="bg-orange-400/30 p-3 rounded-lg">
@@ -242,7 +281,7 @@ export default function Home() {
                 </tr>
               </thead>
               <tbody>
-                {recentOrders.map((order, index) => (
+                {transactions.map((order, index) => (
                   <motion.tr
                     key={order.id}
                     initial={{ opacity: 0, y: 10 }}
@@ -254,17 +293,17 @@ export default function Home() {
                       {order.id}
                     </td>
                     <td className="py-3 px-2 text-sm text-gray-600">
-                      {order.customer}
+                      {order.customer.customer_name}
                     </td>
                     <td className="py-3 px-2 text-sm text-gray-800 font-medium">
-                      Rp {order.amount.toLocaleString("id-ID")}
+                      Rp {order.total.toLocaleString("id-ID")}
                     </td>
                     <td className="py-3 px-2">
                       <span
                         className={`px-2 py-1 rounded-full text-xs font-medium ${
-                          order.status === "completed"
+                          order.status === 1
                             ? "bg-green-100 text-green-800"
-                            : order.status === "pending"
+                            : order.status === 0
                             ? "bg-yellow-100 text-yellow-800"
                             : "bg-blue-100 text-blue-800"
                         }`}
@@ -273,7 +312,7 @@ export default function Home() {
                       </span>
                     </td>
                     <td className="py-3 px-2 text-sm text-gray-500">
-                      {order.time}
+                      {order.created_at}
                     </td>
                   </motion.tr>
                 ))}
@@ -298,27 +337,43 @@ export default function Home() {
             </button>
           </div>
           <div className="space-y-4">
-            {topProducts.map((product, index) => (
-              <motion.div
-                key={product.name}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.7 + index * 0.1 }}
-                className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
-              >
-                <div className="flex-1">
-                  <p className="font-medium text-gray-800 text-sm">
-                    {product.name}
-                  </p>
-                  <p className="text-xs text-gray-500">{product.sold} sold</p>
-                </div>
-                <div className="text-right">
-                  <p className="font-semibold text-gray-800 text-sm">
-                    Rp {product.revenue.toLocaleString("id-ID")}
-                  </p>
-                </div>
-              </motion.div>
-            ))}
+            {topProductsLoading
+              ? // Skeleton loading atau teks biasa
+                Array.from({ length: 4 }).map((_, index) => (
+                  <div
+                    key={index}
+                    className="p-3 bg-gray-100 rounded-lg animate-pulse flex justify-between items-center"
+                  >
+                    <div className="flex-1">
+                      <div className="w-2/3 h-3 bg-gray-300 rounded mb-1" />
+                      <div className="w-1/3 h-2 bg-gray-200 rounded" />
+                    </div>
+                    <div className="w-1/4 h-4 bg-gray-300 rounded" />
+                  </div>
+                ))
+              : topProducts.map((product, index) => (
+                  <motion.div
+                    key={product.name}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.7 + index * 0.1 }}
+                    className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                  >
+                    <div className="flex-1">
+                      <p className="font-medium text-gray-800 text-sm">
+                        {product.name}
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        {product.stock} stock
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-semibold text-gray-800 text-sm">
+                        Rp {product.price.toLocaleString("id-ID")}
+                      </p>
+                    </div>
+                  </motion.div>
+                ))}
           </div>
         </motion.div>
       </div>
