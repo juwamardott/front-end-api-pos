@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { motion } from "framer-motion";
+import { useLocation, Link } from "react-router-dom";
 
 export default function ProductList({ reload }) {
   const [products, setProducts] = useState([]);
@@ -9,6 +10,7 @@ export default function ProductList({ reload }) {
   const [error, setError] = useState(false);
   const [viewMode, setViewMode] = useState("grid"); // 'grid' or 'list'
   const [searchQuery, setSearchQuery] = useState("");
+  const encodeId = (id) => btoa(id.toString());
 
   useEffect(() => {
     setLoading(true);
@@ -170,7 +172,7 @@ export default function ProductList({ reload }) {
       </div>
 
       {/* Header with View Toggle */}
-      <div className="flex justify-between items-center mb-6">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6 gap-4">
         <div>
           <p className="text-gray-600 text-sm">
             Showing {filteredProducts.data?.length || 0} product
@@ -178,7 +180,7 @@ export default function ProductList({ reload }) {
             {searchQuery && ` for "${searchQuery}"`}
           </p>
         </div>
-        <div className="flex bg-gray-100 rounded-lg p-1">
+        <div className="flex bg-gray-100 rounded-lg p-1 w-fit">
           <button
             onClick={() => setViewMode("grid")}
             className={`p-2 rounded-md transition-colors ${
@@ -229,7 +231,7 @@ export default function ProductList({ reload }) {
       {/* No Results Message */}
       {filteredProducts.data?.length === 0 && searchQuery && (
         <div className="text-center py-16">
-          <div className="max-w-md mx-auto">
+          <div className="max-w-md mx-auto px-4">
             <div className="bg-gray-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
               <svg
                 className="w-8 h-8 text-gray-400"
@@ -321,21 +323,11 @@ export default function ProductList({ reload }) {
                       </p>
                     )}
                   </div>
-                  <button className="bg-indigo-600 hover:bg-indigo-700 text-white p-2 rounded-lg transition-colors">
-                    <svg
-                      className="w-4 h-4"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-                      />
-                    </svg>
-                  </button>
+                  <Link to={`/product/${encodeId(product.id)}`}>
+                    <button className="text-sm bg-indigo-600 hover:bg-indigo-700 text-white px-2 py-2 rounded-lg transition-colors font-medium">
+                      Details
+                    </button>
+                  </Link>
                 </div>
               </div>
             </motion.div>
@@ -343,7 +335,7 @@ export default function ProductList({ reload }) {
         </div>
       )}
 
-      {/* List View */}
+      {/* List View - Fully Responsive */}
       {viewMode === "list" && filteredProducts.data?.length > 0 && (
         <div className="space-y-4">
           {filteredProducts.data.map((product, index) => (
@@ -354,34 +346,35 @@ export default function ProductList({ reload }) {
               transition={{ delay: index * 0.03, duration: 0.4 }}
               className="bg-white rounded-xl shadow-sm hover:shadow-md transition-all duration-300 border border-gray-100 hover:border-indigo-200"
             >
-              <div className="flex items-center p-4 gap-4">
+              {/* Desktop & Tablet Layout (md and up) */}
+              <div className="hidden md:flex items-center p-4 lg:p-6 gap-4 lg:gap-6">
                 <div className="flex-shrink-0">
                   <img
                     src={`https://placehold.co/120x120?text=${encodeURIComponent(
                       product.name
                     )}`}
                     alt={product.name}
-                    className="w-20 h-20 object-cover rounded-lg bg-gradient-to-br from-gray-50 to-gray-100"
+                    className="w-20 h-20 lg:w-24 lg:h-24 object-cover rounded-lg bg-gradient-to-br from-gray-50 to-gray-100"
                   />
                 </div>
 
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1">
-                        <h3 className="font-bold text-gray-900 text-lg truncate">
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1 flex-wrap">
+                        <h3 className="font-bold text-gray-900 text-lg lg:text-xl truncate">
                           {product.name}
                         </h3>
-                        <span className="bg-indigo-100 text-indigo-700 text-xs px-2 py-1 rounded-full font-medium">
+                        <span className="bg-indigo-100 text-indigo-700 text-xs px-2 py-1 rounded-full font-medium whitespace-nowrap">
                           {product.category?.category_name || "No Category"}
                         </span>
                       </div>
 
-                      <p className="text-gray-600 text-sm line-clamp-2 mb-2">
+                      <p className="text-gray-600 text-sm lg:text-base line-clamp-2 mb-2 leading-relaxed">
                         {product.description || "No description available"}
                       </p>
 
-                      <div className="flex items-center gap-4 text-sm text-gray-500">
+                      <div className="flex items-center gap-4 text-sm text-gray-500 flex-wrap">
                         {product.sku && <span>SKU: {product.sku}</span>}
                         <span>Stock: {product.stock || 0}</span>
                         {product.stock <= 5 && (
@@ -392,15 +385,73 @@ export default function ProductList({ reload }) {
                       </div>
                     </div>
 
-                    <div className="text-right ml-4">
-                      <p className="text-2xl font-bold text-green-600 mb-2">
+                    <div className="text-right flex-shrink-0">
+                      <p className="text-xl lg:text-2xl font-bold text-green-600 mb-2">
                         Rp {product.price.toLocaleString("id-ID")}
                       </p>
-                      <button className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg transition-colors text-sm font-medium">
-                        Add to Cart
-                      </button>
+                      <Link to={`/product/${encodeId(product.id)}`}>
+                        <button className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg transition-colors text-sm font-medium">
+                          View Details
+                        </button>
+                      </Link>
                     </div>
                   </div>
+                </div>
+              </div>
+
+              {/* Mobile Layout (below md) */}
+              <div className="md:hidden p-4">
+                <div className="flex gap-3 mb-3">
+                  <div className="flex-shrink-0">
+                    <img
+                      src={`https://placehold.co/100x100?text=${encodeURIComponent(
+                        product.name
+                      )}`}
+                      alt={product.name}
+                      className="w-16 h-16 object-cover rounded-lg bg-gradient-to-br from-gray-50 to-gray-100"
+                    />
+                  </div>
+
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-start justify-between gap-2 mb-1">
+                      <h3 className="font-bold text-gray-900 text-base line-clamp-2 leading-tight">
+                        {product.name}
+                      </h3>
+                      <span className="text-lg font-bold text-green-600 whitespace-nowrap">
+                        Rp {product.price.toLocaleString("id-ID")}
+                      </span>
+                    </div>
+
+                    <span className="inline-block bg-indigo-100 text-indigo-700 text-xs px-2 py-1 rounded-full font-medium mb-2">
+                      {product.category?.category_name || "No Category"}
+                    </span>
+                  </div>
+                </div>
+
+                <p className="text-gray-600 text-sm line-clamp-2 mb-3 leading-relaxed">
+                  {product.description || "No description available"}
+                </p>
+
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3 text-xs text-gray-500">
+                    {product.sku && (
+                      <span className="truncate max-w-20">
+                        SKU: {product.sku}
+                      </span>
+                    )}
+                    <span>Stock: {product.stock || 0}</span>
+                    {product.stock <= 5 && (
+                      <span className="text-red-500 font-medium whitespace-nowrap">
+                        Low Stock
+                      </span>
+                    )}
+                  </div>
+
+                  <Link to={`/product/${encodeId(product.id)}`}>
+                    <button className="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-2 rounded-lg transition-colors text-sm font-medium">
+                      View
+                    </button>
+                  </Link>
                 </div>
               </div>
             </motion.div>

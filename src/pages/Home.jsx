@@ -78,7 +78,7 @@ export default function Home() {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mt-10">
         <div className="">
           <h1 className="text-3xl font-bold text-gray-800 poppins-bold">
-            Dashboard
+            Dashboarddd
           </h1>
           <p className="text-gray-600 mt-1">
             Welcome back! Here's what's happening today.
