@@ -250,7 +250,7 @@ const ProductDetail = () => {
           <div className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white p-4 sm:p-6 rounded-xl sm:rounded-2xl shadow-lg sm:shadow-xl">
             <div className="flex flex-col sm:flex-row items-center sm:items-start gap-3 sm:gap-4 text-center sm:text-left">
               <div className="p-2 sm:p-3 bg-white bg-opacity-20 rounded-full flex-shrink-0">
-                <Shield size={24} className="sm:w-7 sm:h-7 text-white" />
+                <Shield size={24} className="sm:w-7 sm:h-7 text-black" />
               </div>
               <div>
                 <h3 className="text-lg sm:text-xl font-semibold">

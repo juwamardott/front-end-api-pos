@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-
+import axios from "axios";
 export default function TransactionForm() {
   const [transactionItems, setTransactionItems] = useState([]);
   const [selectedProduct, setSelectedProduct] = useState("");
@@ -24,40 +24,21 @@ export default function TransactionForm() {
       try {
         setLoading(true);
         // Simulate API call
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-
-        // Since we can't make real API calls in this environment, use sample data
-        const sampleProducts = [
-          { id: 1, name: "Nasi Gudeg", price: 20000 },
-          { id: 2, name: "Es Teh Manis", price: 5000 },
-          { id: 3, name: "Ayam Bakar", price: 30000 },
-          { id: 4, name: "Soto Ayam", price: 15000 },
-          { id: 5, name: "Gado-gado", price: 18000 },
-          { id: 6, name: "Es Jeruk", price: 6000 },
-          { id: 7, name: "Bakso", price: 12000 },
-          { id: 8, name: "Mie Ayam", price: 13000 },
-        ];
-
-        setProducts(sampleProducts);
-        setFilteredProducts(sampleProducts);
-        setError("");
+        axios
+          .get("http://127.0.0.1:8000/api/products/")
+          .then((res) => {
+            setProducts(res.data.data);
+            setFilteredProducts(res.data.data);
+            setLoading(false);
+            // console.log(res.data);
+          })
+          .catch((err) => {
+            setError(true);
+            setLoading(false);
+          });
       } catch (err) {
         console.error("Error fetching products:", err);
         setError("Gagal memuat data produk. Menggunakan data sample.");
-
-        // Fallback ke data sample jika API gagal
-        const sampleProducts = [
-          { id: 1, name: "Nasi Gudeg", price: 20000 },
-          { id: 2, name: "Es Teh Manis", price: 5000 },
-          { id: 3, name: "Ayam Bakar", price: 30000 },
-          { id: 4, name: "Soto Ayam", price: 15000 },
-          { id: 5, name: "Gado-gado", price: 18000 },
-          { id: 6, name: "Es Jeruk", price: 6000 },
-          { id: 7, name: "Bakso", price: 12000 },
-          { id: 8, name: "Mie Ayam", price: 13000 },
-        ];
-        setProducts(sampleProducts);
-        setFilteredProducts(sampleProducts);
       } finally {
         setLoading(false);
       }
@@ -142,12 +123,8 @@ export default function TransactionForm() {
   const processTransaction = () => {
     if (transactionItems.length === 0) return;
 
-    // Here you would normally send the transaction to your backend
-    alert(
-      `Transaksi berhasil!\nTotal: Rp ${total.toLocaleString(
-        "id-ID"
-      )}\nMetode Pembayaran: ${paymentMethod}`
-    );
+    try {
+    } catch (error) {}
 
     // Reset form
     setTransactionItems([]);
@@ -172,13 +149,13 @@ export default function TransactionForm() {
   };
 
   return (
-    <div className="space-y-6 font-medium">
+    <div className="space-y-6 poppins-medium">
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mt-10">
         <div>
-          <h1 className="text-3xl font-bold text-gray-800">Transaksi Baru</h1>
+          <h1 className="text-3xl font-bold text-gray-800">New Transaksi</h1>
           <p className="text-gray-600 mt-1">
-            Buat transaksi baru untuk pelanggan
+            Create New Transaction for Customer
           </p>
         </div>
         <div className="text-right">
