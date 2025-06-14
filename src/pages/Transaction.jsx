@@ -1,6 +1,9 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
-export default function TransactionForm() {
+import toast from "react-hot-toast";
+
+export default function TransactionForm({ onSuccess }) {
+  // ✅ Tambahkan props onSuccess
   const [transactionItems, setTransactionItems] = useState([]);
   const [selectedProduct, setSelectedProduct] = useState("");
   const [quantity, setQuantity] = useState(1);
@@ -23,22 +26,19 @@ export default function TransactionForm() {
     const fetchProducts = async () => {
       try {
         setLoading(true);
-        // Simulate API call
-        axios
-          .get("http://127.0.0.1:8000/api/products/")
-          .then((res) => {
-            setProducts(res.data.data);
-            setFilteredProducts(res.data.data);
-            setLoading(false);
-            // console.log(res.data);
-          })
-          .catch((err) => {
-            setError(true);
-            setLoading(false);
-          });
+        const response = await axios.get("http://127.0.0.1:8000/api/products/");
+
+        if (response.data && response.data.data) {
+          setProducts(response.data.data);
+          setFilteredProducts(response.data.data);
+          setError(""); // ✅ Reset error jika berhasil
+        } else {
+          setError("Data format tidak sesuai");
+        }
       } catch (err) {
-        console.error("Error fetching products:", err);
-        setError("Gagal memuat data produk. Menggunakan data sample.");
+        setError("Gagal memuat data produk");
+        // ✅ Hapus console.error jika tidak ingin tampil di console
+        // console.error("Error fetching products:", err);
       } finally {
         setLoading(false);
       }
@@ -120,18 +120,72 @@ export default function TransactionForm() {
   };
 
   // Process transaction
-  const processTransaction = () => {
-    if (transactionItems.length === 0) return;
+  const processTransaction = async () => {
+    if (transactionItems.length === 0) {
+      toast.error("Tidak ada item dalam transaksi!");
+      return;
+    }
 
+    const payloadItems = transactionItems.map((item) => ({
+      product_id: item.id,
+      quantity: item.quantity,
+      price: item.price,
+    }));
+
+    const data = {
+      date_order: "2025-06-14",
+      customer_id: null,
+      customer_name: customerName || null,
+      no_telepon: customerPhone || null,
+      paid_amount: total,
+      created_by: 1,
+      items: payloadItems,
+    };
+
+    // if (data.customer_name == null) {
+    //   return toast.success("Customer tidak boleh kosong!", {
+    //     style: { fontFamily: "Poppins, sans-serif" },
+    //   });
+    // }
     try {
-    } catch (error) {}
+      const res = await fetch("http://127.0.0.1:8000/api/transactions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          // Authorization: `Bearer ${your_token}` (jika pakai auth)
+        },
 
-    // Reset form
-    setTransactionItems([]);
-    setCustomerName("");
-    setCustomerPhone("");
-    setDiscount(0);
-    setPaymentMethod("cash");
+        body: JSON.stringify(data),
+      });
+
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.message || "Failed to create Transactions");
+      }
+
+      // ✅ Tampilkan toast sukses
+      toast.success("Transaksi berhasil dibuat!", {
+        style: { fontFamily: "Poppins, sans-serif" },
+      });
+
+      // ✅ Reset form setelah berhasil
+      setTransactionItems([]);
+      setCustomerName("");
+      setCustomerPhone("");
+      setDiscount(0);
+      setPaymentMethod("cash");
+
+      // ✅ Panggil onSuccess jika ada
+      if (onSuccess && typeof onSuccess === "function") {
+        onSuccess();
+      }
+    } catch (error) {
+      // ✅ Handle error dengan toast
+      toast.error(error.message || "Gagal membuat transaksi!", {
+        style: { fontFamily: "Poppins, sans-serif" },
+      });
+      console.error("Error creating transaction:", error);
+    }
   };
 
   // Handle product selection from search results

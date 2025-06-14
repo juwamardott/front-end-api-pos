@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   X,
   Package,
@@ -7,8 +7,10 @@ import {
   FileText,
   Layers,
   Sparkles,
+  Tag,
 } from "lucide-react";
 import toast from "react-hot-toast";
+import axios from "axios";
 
 export default function AddProductModal({ onClose, onSuccess }) {
   const [name, setName] = useState("");
@@ -17,7 +19,21 @@ export default function AddProductModal({ onClose, onSuccess }) {
   const [sku, setSKU] = useState("");
   const [description, setDescription] = useState("");
   const [stock, setStock] = useState("");
+  const [selectedCategoryId, setSelectedCategoryId] = useState(""); // State untuk category yang dipilih
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [category, setCategory] = useState([]);
+
+  useEffect(() => {
+    axios
+      .get("http://127.0.0.1:8000/api/category-product")
+      .then((res) => {
+        setCategory(res.data.data);
+        console.log(res.data.data);
+      })
+      .catch((err) => {
+        console.error("Gagal mengambil data produk:", err);
+      });
+  }, []);
 
   // Fungsi untuk format ke rupiah
   const formatRupiah = (number) => {
@@ -59,6 +75,7 @@ export default function AddProductModal({ onClose, onSuccess }) {
 
     const priceInt = parseInt(price);
     const stockInt = parseInt(stock);
+    const categoryId = parseInt(selectedCategoryId);
 
     if (!name.trim()) {
       toast.error("Name is required");
@@ -70,6 +87,11 @@ export default function AddProductModal({ onClose, onSuccess }) {
       setIsSubmitting(false);
       return;
     }
+    if (!selectedCategoryId || isNaN(categoryId)) {
+      toast.error("Please select a category");
+      setIsSubmitting(false);
+      return;
+    }
 
     const data = {
       name: name.trim(),
@@ -77,7 +99,7 @@ export default function AddProductModal({ onClose, onSuccess }) {
       description: description.trim(),
       price: priceInt,
       stock: isNaN(stockInt) ? 0 : stockInt,
-      category_id: 1,
+      category_id: categoryId, // Menggunakan kategori yang dipilih
       is_active: 1,
     };
 
@@ -112,75 +134,98 @@ export default function AddProductModal({ onClose, onSuccess }) {
   };
 
   return (
-    <div className="fixed inset-0 bg-gradient-to-br from-black/60 via-black/50 to-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg transform transition-all duration-300">
+    <div className="fixed inset-0 bg-gradient-to-br from-black/60 via-black/50 to-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-2 sm:p-4">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg transform transition-all duration-300 max-h-[95vh] overflow-y-auto">
         {/* Header */}
-        <div className="relative bg-gradient-to-r from-indigo-600 via-purple-600 to-blue-600 rounded-t-2xl p-6 text-white">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-white/20 rounded-xl backdrop-blur-sm">
-              <Package className="w-6 h-6" />
+        <div className="relative bg-gradient-to-r from-indigo-600 via-purple-600 to-blue-600 rounded-t-2xl p-4 sm:p-6 text-white">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <div className="p-1.5 sm:p-2 bg-white/20 rounded-xl backdrop-blur-sm">
+              <Package className="w-5 h-5 sm:w-6 sm:h-6" />
             </div>
-            <div>
-              <h2 className="text-2xl font-bold">Create New Product</h2>
-              <p className="text-white/80 text-sm">
+            <div className="flex-1 min-w-0">
+              <h2 className="text-lg sm:text-2xl font-bold truncate">
+                Create New Product
+              </h2>
+              <p className="text-white/80 text-xs sm:text-sm truncate">
                 Add a new product to your inventory
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="absolute top-4 right-4 p-2 hover:bg-white/20 rounded-full transition-colors duration-200"
+            className="absolute top-3 right-3 sm:top-4 sm:right-4 p-1.5 sm:p-2 hover:bg-white/20 rounded-full transition-colors duration-200"
             disabled={isSubmitting}
           >
-            <X className="w-5 h-5" />
+            <X className="w-4 h-4 sm:w-5 sm:h-5" />
           </button>
           <div className="absolute -bottom-1 left-0 right-0 h-4 bg-gradient-to-b from-transparent to-white/10"></div>
         </div>
 
         {/* Form */}
-        <div className="p-6 space-y-5">
+        <div className="p-4 sm:p-6 space-y-4 sm:space-y-5">
           {/* Product Name */}
           <div className="group">
-            <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-2">
-              <Package className="w-4 h-4 text-indigo-500" />
+            <label className="flex items-center gap-2 text-xs sm:text-sm font-semibold text-gray-700 mb-2">
+              <Package className="w-3 h-3 sm:w-4 sm:h-4 text-indigo-500" />
               Product Name
             </label>
             <input
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/20 transition-all duration-200 outline-none"
+              className="w-full px-3 py-2.5 sm:px-4 sm:py-3 border-2 border-gray-200 rounded-xl focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/20 transition-all duration-200 outline-none text-sm sm:text-base"
               placeholder="Enter product name"
               disabled={isSubmitting}
             />
           </div>
 
+          {/* Category Selection */}
+          <div className="group">
+            <label className="flex items-center gap-2 text-xs sm:text-sm font-semibold text-gray-700 mb-2">
+              <Tag className="w-3 h-3 sm:w-4 sm:h-4 text-indigo-500" />
+              Category
+            </label>
+            <select
+              value={selectedCategoryId}
+              onChange={(e) => setSelectedCategoryId(e.target.value)}
+              className="w-full px-3 py-2.5 sm:px-4 sm:py-3 border-2 border-gray-200 rounded-xl focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/20 transition-all duration-200 outline-none bg-white text-sm sm:text-base"
+              disabled={isSubmitting}
+            >
+              <option value="">Select a category</option>
+              {category.map((cat) => (
+                <option key={cat.id} value={cat.id.toString()}>
+                  {cat.category_name}
+                </option>
+              ))}
+            </select>
+          </div>
+
           {/* SKU and Price Row */}
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="group">
-              <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-2">
-                <Hash className="w-4 h-4 text-indigo-500" />
+              <label className="flex items-center gap-2 text-xs sm:text-sm font-semibold text-gray-700 mb-2">
+                <Hash className="w-3 h-3 sm:w-4 sm:h-4 text-indigo-500" />
                 SKU
               </label>
               <input
                 type="text"
                 value={sku}
                 onChange={(e) => setSKU(e.target.value)}
-                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/20 transition-all duration-200 outline-none"
+                className="w-full px-3 py-2.5 sm:px-4 sm:py-3 border-2 border-gray-200 rounded-xl focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/20 transition-all duration-200 outline-none text-sm sm:text-base"
                 placeholder="SKU123"
                 disabled={isSubmitting}
               />
             </div>
             <div className="group">
-              <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-2">
-                <DollarSign className="w-4 h-4 text-indigo-500" />
+              <label className="flex items-center gap-2 text-xs sm:text-sm font-semibold text-gray-700 mb-2">
+                <DollarSign className="w-3 h-3 sm:w-4 sm:h-4 text-indigo-500" />
                 Price
               </label>
               <input
                 type="text"
                 value={displayPrice}
                 onChange={handlePriceChange}
-                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/20 transition-all duration-200 outline-none"
+                className="w-full px-3 py-2.5 sm:px-4 sm:py-3 border-2 border-gray-200 rounded-xl focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/20 transition-all duration-200 outline-none text-sm sm:text-base"
                 placeholder="Rp 0"
                 disabled={isSubmitting}
               />
@@ -189,14 +234,14 @@ export default function AddProductModal({ onClose, onSuccess }) {
 
           {/* Description */}
           <div className="group">
-            <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-2">
-              <FileText className="w-4 h-4 text-indigo-500" />
+            <label className="flex items-center gap-2 text-xs sm:text-sm font-semibold text-gray-700 mb-2">
+              <FileText className="w-3 h-3 sm:w-4 sm:h-4 text-indigo-500" />
               Description
             </label>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/20 transition-all duration-200 outline-none resize-none"
+              className="w-full px-3 py-2.5 sm:px-4 sm:py-3 border-2 border-gray-200 rounded-xl focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/20 transition-all duration-200 outline-none resize-none text-sm sm:text-base"
               placeholder="Enter product description"
               rows="3"
               disabled={isSubmitting}
@@ -205,26 +250,26 @@ export default function AddProductModal({ onClose, onSuccess }) {
 
           {/* Stock */}
           <div className="group">
-            <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-2">
-              <Layers className="w-4 h-4 text-indigo-500" />
+            <label className="flex items-center gap-2 text-xs sm:text-sm font-semibold text-gray-700 mb-2">
+              <Layers className="w-3 h-3 sm:w-4 sm:h-4 text-indigo-500" />
               Stock Quantity
             </label>
             <input
               type="number"
               value={stock}
               onChange={(e) => setStock(e.target.value)}
-              className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/20 transition-all duration-200 outline-none"
+              className="w-full px-3 py-2.5 sm:px-4 sm:py-3 border-2 border-gray-200 rounded-xl focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/20 transition-all duration-200 outline-none text-sm sm:text-base"
               placeholder="0"
               disabled={isSubmitting}
             />
           </div>
 
           {/* Actions */}
-          <div className="flex gap-3 pt-4">
+          <div className="flex flex-col sm:flex-row gap-3 pt-2 sm:pt-4">
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 hover:border-gray-400 transition-all duration-200 font-semibold disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+              className="w-full sm:flex-1 px-4 py-2.5 sm:px-6 sm:py-3 border-2 border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 hover:border-gray-400 transition-all duration-200 font-semibold disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer text-sm sm:text-base"
               disabled={isSubmitting}
             >
               Cancel
@@ -232,18 +277,18 @@ export default function AddProductModal({ onClose, onSuccess }) {
             <button
               type="button"
               onClick={handleSubmit}
-              className="flex-1 px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl hover:from-indigo-700 hover:to-purple-700 transition-all duration-200 font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg hover:shadow-xl cursor-pointer"
+              className="w-full sm:flex-1 px-4 py-2.5 sm:px-6 sm:py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl hover:from-indigo-700 hover:to-purple-700 transition-all duration-200 font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg hover:shadow-xl cursor-pointer text-sm sm:text-base"
               disabled={isSubmitting}
             >
               {isSubmitting ? (
                 <>
-                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                  Creating...
+                  <div className="w-3 h-3 sm:w-4 sm:h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                  <span className="text-xs sm:text-base">Creating...</span>
                 </>
               ) : (
                 <>
-                  <Sparkles className="w-4 h-4" />
-                  Create Product
+                  <Sparkles className="w-3 h-3 sm:w-4 sm:h-4" />
+                  <span className="text-xs sm:text-base">Create Product</span>
                 </>
               )}
             </button>

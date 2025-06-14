@@ -15,15 +15,11 @@ export default function Home() {
         );
         if (response.data) {
           setStats(response.data);
-          // console.log(response.data);
         } else {
-          // setStatsError("Format data tidak sesuai");
         }
       } catch (err) {
-        // setStatsError("Gagal mengambil data statistik");
         console.error(err);
       } finally {
-        // setStatsLoading(false);
       }
     };
 
@@ -31,6 +27,7 @@ export default function Home() {
   }, []);
 
   const [transactions, setTransactions] = useState([]);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     const getTransactions = async () => {
@@ -40,12 +37,19 @@ export default function Home() {
         );
         if (response.data && response.data.data) {
           setTransactions(response.data.data);
+          // console.log(response.data.data);
+          setError(null); // Reset error jika berhasil
         } else {
-          // setError("Data format tidak sesuai");
+          setError("Data format tidak sesuai");
         }
       } catch (err) {
-        // setError("Gagal mengambil data transaksi");
-        console.error(err);
+        setError("Gagal mengambil data transaksi");
+        // Hapus console.error(err); untuk tidak tampil di console
+
+        // Optional: Jika ingin tetap log untuk development saja
+        // if (process.env.NODE_ENV === 'development') {
+        //   console.error(err);
+        // }
       } finally {
         // setLoading(false);
       }
@@ -60,8 +64,11 @@ export default function Home() {
   useEffect(() => {
     const fetchTopProducts = async () => {
       try {
-        const response = await axios.get("http://127.0.0.1:8000/api/products");
+        const response = await axios.get(
+          "http://127.0.0.1:8000/api/reports/top-product"
+        );
         setTopProducts(response.data.data);
+        // console.log(response.data.data);
       } catch (error) {
         console.error("Gagal mengambil data produk:", error);
       } finally {
@@ -145,8 +152,8 @@ export default function Home() {
             <div>
               <p className="text-green-100 text-sm">Today Orders</p>
               <p className="text-2xl font-bold">
-                {stats?.data?.total_order
-                  ? `Rp ${stats.data.total_order.toLocaleString("id-ID")}`
+                {stats?.data?.today_orders
+                  ? `${stats.data.today_orders}`
                   : "Loading..."}
               </p>
               <p className="text-green-100 text-xs mt-1">
@@ -182,7 +189,7 @@ export default function Home() {
               <p className="text-purple-100 text-sm">Total Products</p>
               <p className="text-2xl font-bold">
                 {stats?.data?.total_product
-                  ? `Rp ${stats.data.total_product.toLocaleString("id-ID")}`
+                  ? `${stats.data.total_product}`
                   : "Loading..."}
               </p>
               <p className="text-purple-100 text-xs mt-1">
@@ -218,7 +225,7 @@ export default function Home() {
               <p className="text-orange-100 text-sm">Low Stock Alert</p>
               <p className="text-2xl font-bold">
                 {stats?.data?.low_stock
-                  ? `Rp ${stats.data.low_stock.toLocaleString("id-ID")}`
+                  ? `${stats.data.low_stock}`
                   : "Loading..."}
               </p>
               <p className="text-orange-100 text-xs mt-1">Items need restock</p>
@@ -276,46 +283,87 @@ export default function Home() {
                     Status
                   </th>
                   <th className="text-left py-3 px-2 text-sm font-medium text-gray-600">
-                    Time
+                    Date Order
                   </th>
                 </tr>
               </thead>
               <tbody>
-                {transactions.map((order, index) => (
+                {transactions && transactions.length > 0 ? (
+                  transactions.map((order, index) => (
+                    <motion.tr
+                      key={order.id}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.6 + index * 0.1 }}
+                      className="border-b border-gray-100 hover:bg-gray-50"
+                    >
+                      <td className="py-3 px-2 text-sm font-medium text-gray-800">
+                        {order.id}
+                      </td>
+                      <td className="py-3 px-2 text-sm text-gray-600">
+                        {order.customer?.customer_name || "Umum"}
+                      </td>
+                      <td className="py-3 px-2 text-sm text-gray-800 font-medium">
+                        Rp {order.total.toLocaleString("id-ID")}
+                      </td>
+                      <td className="py-3 px-2">
+                        <span
+                          className={`px-2 py-1 rounded-full text-xs font-medium ${
+                            order.status === 1
+                              ? "bg-green-100 text-green-800"
+                              : order.status === 0
+                              ? "bg-yellow-100 text-yellow-800"
+                              : "bg-blue-100 text-blue-800"
+                          }`}
+                        >
+                          {order.status === 0
+                            ? "Under Review"
+                            : order.status === 1
+                            ? "Accepted"
+                            : order.status === -1
+                            ? "Rejected"
+                            : "Unknown"}
+                        </span>
+                      </td>
+                      <td className="py-3 px-2 text-sm text-gray-500">
+                        {order.date_order}
+                      </td>
+                    </motion.tr>
+                  ))
+                ) : (
                   <motion.tr
-                    key={order.id}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.6 + index * 0.1 }}
-                    className="border-b border-gray-100 hover:bg-gray-50"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.6 }}
                   >
-                    <td className="py-3 px-2 text-sm font-medium text-gray-800">
-                      {order.id}
-                    </td>
-                    <td className="py-3 px-2 text-sm text-gray-600">
-                      {order.customer.customer_name}
-                    </td>
-                    <td className="py-3 px-2 text-sm text-gray-800 font-medium">
-                      Rp {order.total.toLocaleString("id-ID")}
-                    </td>
-                    <td className="py-3 px-2">
-                      <span
-                        className={`px-2 py-1 rounded-full text-xs font-medium ${
-                          order.status === 1
-                            ? "bg-green-100 text-green-800"
-                            : order.status === 0
-                            ? "bg-yellow-100 text-yellow-800"
-                            : "bg-blue-100 text-blue-800"
-                        }`}
-                      >
-                        {order.status}
-                      </span>
-                    </td>
-                    <td className="py-3 px-2 text-sm text-gray-500">
-                      {order.created_at}
+                    <td
+                      colSpan="5"
+                      className="py-8 px-4 text-center text-gray-500"
+                    >
+                      <div className="flex flex-col items-center space-y-2">
+                        <svg
+                          className="w-12 h-12 text-gray-300"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={1.5}
+                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                          />
+                        </svg>
+                        <p className="text-sm font-medium">
+                          Tidak ada data transaksi
+                        </p>
+                        <p className="text-xs text-gray-400">
+                          Data transaksi belum tersedia atau gagal dimuat
+                        </p>
+                      </div>
                     </td>
                   </motion.tr>
-                ))}
+                )}
               </tbody>
             </table>
           </div>
@@ -353,7 +401,7 @@ export default function Home() {
                 ))
               : topProducts.map((product, index) => (
                   <motion.div
-                    key={product.name}
+                    key={product.product.name}
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.7 + index * 0.1 }}
@@ -361,15 +409,15 @@ export default function Home() {
                   >
                     <div className="flex-1">
                       <p className="font-medium text-gray-800 text-sm">
-                        {product.name}
+                        {product.product.name}
                       </p>
                       <p className="text-xs text-gray-500">
-                        {product.stock} stock
+                        {product.product.stock} stock
                       </p>
                     </div>
                     <div className="text-right">
                       <p className="font-semibold text-gray-800 text-sm">
-                        Rp {product.price.toLocaleString("id-ID")}
+                        Rp {product.total.toLocaleString("id-ID")}
                       </p>
                     </div>
                   </motion.div>

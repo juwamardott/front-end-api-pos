@@ -314,7 +314,7 @@ export default function ProductList({ reload }) {
 
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-2xl font-bold text-green-600">
+                    <p className="text-xl font-bold text-green-600">
                       Rp {product.price.toLocaleString("id-ID")}
                     </p>
                     {product.sku && (
@@ -325,7 +325,7 @@ export default function ProductList({ reload }) {
                   </div>
                   <Link to={`/product/${encodeId(product.id)}`}>
                     <button className="text-sm bg-indigo-600 hover:bg-indigo-700 text-white px-2 py-2 rounded-lg transition-colors font-medium">
-                      Details
+                      Manage
                     </button>
                   </Link>
                 </div>
