@@ -116,7 +116,8 @@ export default function Home() {
             <div>
               <p className="text-blue-100 text-sm">Total Sales</p>
               <p className="text-2xl font-bold">
-                {stats?.data?.total_sales
+                {stats?.data?.total_sales !== undefined &&
+                stats?.data?.total_sales !== null
                   ? `Rp ${stats.data.total_sales.toLocaleString("id-ID")}`
                   : "Loading..."}
               </p>
@@ -152,7 +153,8 @@ export default function Home() {
             <div>
               <p className="text-green-100 text-sm">Today Orders</p>
               <p className="text-2xl font-bold">
-                {stats?.data?.today_orders
+                {stats?.data?.today_orders !== undefined &&
+                stats?.data?.today_orders !== null
                   ? `${stats.data.today_orders}`
                   : "Loading..."}
               </p>
