@@ -142,11 +142,6 @@ export default function TransactionForm({ onSuccess }) {
       items: payloadItems,
     };
 
-    // if (data.customer_name == null) {
-    //   return toast.success("Customer tidak boleh kosong!", {
-    //     style: { fontFamily: "Poppins, sans-serif" },
-    //   });
-    // }
     try {
       const res = await fetch("http://127.0.0.1:8000/api/transactions", {
         method: "POST",
@@ -587,6 +582,19 @@ export default function TransactionForm({ onSuccess }) {
                   <span className="text-indigo-600">
                     Rp {total.toLocaleString("id-ID")}
                   </span>
+                </div>
+              </div>
+
+              <div className="pt-3">
+                <div className="flex items-center gap-2 justify-between">
+                  <span>Cash :</span>
+                  <input
+                    type=""
+                    value={total.toLocaleString("id-ID")} // onChange={(e) =>
+                    //   setDiscount(parseFloat(e.target.value) || 0)
+                    // }
+                    className="w-56 px-2 py-2 text-lg border border-indigo-500 rounded text-end"
+                  />
                 </div>
               </div>
             </div>
