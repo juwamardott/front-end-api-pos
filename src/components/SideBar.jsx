@@ -7,6 +7,7 @@ import {
   Settings,
   ChevronRight,
   Store,
+  ChartArea,
   Sparkles,
 } from "lucide-react";
 
@@ -19,6 +20,7 @@ export default function Sidebar({ isOpen }) {
     { path: "/", label: "Dashboard", icon: Home },
     { path: "/transaction", label: "Transaction", icon: ShoppingCart },
     { path: "/product", label: "Product", icon: Package },
+    { path: "/reports", label: "Report", icon: ChartArea },
     { path: "/settings", label: "Settings", icon: Settings },
   ];
 

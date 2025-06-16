@@ -155,7 +155,7 @@ export default function AddProductModal({ onClose, onSuccess }) {
         </div>
 
         {/* Form */}
-        <div className="p-4 sm:p-6 lg:p-8 space-y-6 lg:space-y-8">
+        <div className="p-4 sm:p-6 lg:p-8 space-y-6 lg:space-y-8 poppins-medium">
           {/* Row 1: Product Name & Category */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
             {/* Product Name */}

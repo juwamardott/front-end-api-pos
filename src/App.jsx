@@ -5,6 +5,7 @@ import Home from "./pages/Home";
 import Product from "./pages/Product";
 import ProductDetail from "./components/ProductDetail";
 import Transaction from "./pages/Transaction";
+import Reports from "./pages/Reports";
 import { Toaster } from "react-hot-toast"; // ✅ import
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 
@@ -20,6 +21,7 @@ function App() {
           <Route path="/product" element={<Product />} />
           <Route path="/product/:id" element={<ProductDetail />} />
           <Route path="/transaction" element={<Transaction />} />
+          <Route path="/reports" element={<Reports />} />
         </Routes>
       </Layout>
     </Router>

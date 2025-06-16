@@ -12,6 +12,8 @@ export default function TransactionForm({ onSuccess }) {
   const [paymentMethod, setPaymentMethod] = useState("cash");
   const [discount, setDiscount] = useState(0);
   const [tax, setTax] = useState(10); // 10% tax
+  const [cash, setCash] = useState("");
+  const [change, setChange] = useState(0);
 
   // State untuk API dan search
   const [products, setProducts] = useState([]); // Initialize as empty array
@@ -69,6 +71,7 @@ export default function TransactionForm({ onSuccess }) {
   const discountAmount = (subtotal * discount) / 100;
   const taxAmount = ((subtotal - discountAmount) * tax) / 100;
   const total = subtotal - discountAmount + taxAmount;
+  // setCash(total);
 
   // Add item to transaction
   const addItem = () => {
@@ -195,6 +198,17 @@ export default function TransactionForm({ onSuccess }) {
     setSearchTerm("");
     setSelectedProduct("");
     setShowSearchDropdown(false);
+  };
+
+  useEffect(() => {
+    const cashNumber = parseInt(cash || "0");
+    const calculatedChange = cashNumber - total;
+    setChange(calculatedChange);
+  }, [cash, total]);
+
+  const handleCashChange = (e) => {
+    const raw = e.target.value.replace(/[^0-9]/g, "");
+    setCash(raw);
   };
 
   return (
@@ -584,16 +598,27 @@ export default function TransactionForm({ onSuccess }) {
                   </span>
                 </div>
               </div>
-
+              {/* Cash */}
               <div className="pt-3">
                 <div className="flex items-center gap-2 justify-between">
                   <span>Cash :</span>
                   <input
                     type=""
-                    value={total.toLocaleString("id-ID")} // onChange={(e) =>
-                    //   setDiscount(parseFloat(e.target.value) || 0)
-                    // }
-                    className="w-56 px-2 py-2 text-lg border border-indigo-500 rounded text-end"
+                    value={parseInt(cash || "0").toLocaleString("id-ID")}
+                    onChange={handleCashChange}
+                    className="w-56 px-2 py-2 text-lg border border-indigo-400 rounded text-end"
+                  />
+                </div>
+              </div>
+              {/* Change */}
+              <div className="pt-3">
+                <div className="flex items-center gap-2 justify-between">
+                  <span>Change :</span>
+                  <input
+                    type=""
+                    value={change.toLocaleString("id-ID")}
+                    readOnly
+                    className="w-56 px-2 py-2 text-lg rounded text-end"
                   />
                 </div>
               </div>
