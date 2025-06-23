@@ -51,7 +51,7 @@ const EditProduct = () => {
           sku: product.sku || "",
           description: product.description || "",
           price: product.price || "",
-          stock: product.stock || "",
+          stock: product.stock[0]?.quantity || "",
           category_id: product.category?.id || "",
           is_active: product.is_active,
         });

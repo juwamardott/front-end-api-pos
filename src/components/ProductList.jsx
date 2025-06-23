@@ -285,10 +285,10 @@ export default function ProductList({ reload }) {
                 />
                 <div className="absolute top-3 right-3">
                   <span className="bg-white/90 backdrop-blur-sm px-2 py-1 rounded-full text-xs font-medium text-gray-700">
-                    Stock: {product.stock || 0}
+                    Stock: {product.stock[0]?.quantity || 0}
                   </span>
                 </div>
-                {product.stock <= 5 && (
+                {product.stock[0]?.quantity <= 5 && (
                   <div className="absolute top-3 left-3">
                     <span className="bg-red-500 text-white px-2 py-1 rounded-full text-xs font-medium">
                       Low Stock
@@ -439,8 +439,8 @@ export default function ProductList({ reload }) {
                         SKU: {product.sku}
                       </span>
                     )}
-                    <span>Stock: {product.stock || 0}</span>
-                    {product.stock <= 5 && (
+                    <span>Stock: {product.stock[0]?.quantity || 0}</span>
+                    {product.stock[0]?.quantity <= 5 && (
                       <span className="text-red-500 font-medium whitespace-nowrap">
                         Low Stock
                       </span>
