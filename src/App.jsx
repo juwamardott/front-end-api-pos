@@ -1,29 +1,45 @@
-import { useState } from "react";
-import "./App.css";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { Toaster } from "react-hot-toast"; // ✅ Import toast
+
 import Layout from "./Layout";
 import Home from "./pages/Home";
+import Login from "./pages/Login";
+import PrivateRoute from "./routes/PrivateRoute";
 import Product from "./pages/Product";
-import ProductDetail from "./components/ProductDetail";
 import Transaction from "./pages/Transaction";
 import Reports from "./pages/Reports";
-import { Toaster } from "react-hot-toast"; // ✅ import
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import ProductDetail from "./components/ProductDetail";
 
 function App() {
   return (
     <Router>
-      {/* ✅ Toaster di sini, agar global */}
-      <Toaster position="top-right" reverseOrder={false} />
+      {/* ✅ Global Toast Component */}
+      <Toaster
+        position="top-right"
+        toastOptions={{
+          className: "poppins-medium text-sm", // ✅ Poppins
+        }}
+      />
 
-      <Layout>
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/product" element={<Product />} />
-          <Route path="/product/:id" element={<ProductDetail />} />
-          <Route path="/transaction" element={<Transaction />} />
-          <Route path="/reports" element={<Reports />} />
-        </Routes>
-      </Layout>
+      <Routes>
+        <Route path="/login" element={<Login />} />
+        <Route
+          path="*"
+          element={
+            <PrivateRoute>
+              <Layout>
+                <Routes>
+                  <Route path="/home" element={<Home />} />
+                  <Route path="/product" element={<Product />} />
+                  <Route path="/product/:id" element={<ProductDetail />} />
+                  <Route path="/transaction" element={<Transaction />} />
+                  <Route path="/reports" element={<Reports />} />
+                </Routes>
+              </Layout>
+            </PrivateRoute>
+          }
+        />
+      </Routes>
     </Router>
   );
 }

@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { useLocation, Link } from "react-router-dom";
 
 export default function ProductList({ reload }) {
+  const API_URL = import.meta.env.VITE_API_BASE_URL;
   const [products, setProducts] = useState([]);
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -16,7 +17,7 @@ export default function ProductList({ reload }) {
     setLoading(true);
     setError(false);
     axios
-      .get("http://127.0.0.1:8000/api/products/")
+      .get(`${API_URL}/products`)
       .then((res) => {
         setProducts(res.data);
         setFilteredProducts(res.data);

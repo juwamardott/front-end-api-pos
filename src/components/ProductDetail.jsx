@@ -13,6 +13,7 @@ import {
 import toast from "react-hot-toast";
 
 const EditProduct = () => {
+  const API_URL = import.meta.env.VITE_API_BASE_URL;
   const { id } = useParams();
   const navigate = useNavigate();
   const decodedId = atob(decodeURIComponent(id));
@@ -41,8 +42,8 @@ const EditProduct = () => {
       try {
         setLoading(true);
         const [productRes, categoriesRes] = await Promise.all([
-          axios.get(`http://127.0.0.1:8000/api/products/${decodedId}`),
-          axios.get(`http://127.0.0.1:8000/api/category-product`),
+          axios.get(`${API_URL}/products/${decodedId}`),
+          axios.get(`${API_URL}/category-product`),
         ]);
 
         const product = productRes.data.data;
