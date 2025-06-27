@@ -1,7 +1,7 @@
 import { create } from "zustand";
 
 const useAuth = create((set) => ({
-  user: null,
+  user: JSON.parse(sessionStorage.getItem("user")) || null, // ← load user dari session
   token: sessionStorage.getItem("token") || null,
 
   // Login handler

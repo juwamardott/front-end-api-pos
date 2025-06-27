@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
+import useAuth from "../store/auth";
 
 export default function TransactionForm({ onSuccess }) {
   // ✅ Tambahkan props onSuccess
@@ -22,13 +23,18 @@ export default function TransactionForm({ onSuccess }) {
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [showSearchDropdown, setShowSearchDropdown] = useState(false);
+  const user = useAuth((state) => state.user);
+
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Fetch products dari API
   useEffect(() => {
     const fetchProducts = async () => {
       try {
         setLoading(true);
-        const response = await axios.get("http://127.0.0.1:8000/api/products/");
+        const response = await axios.get(
+          "http://127.0.0.1:8000/api/transaction/products"
+        );
 
         if (response.data && response.data.data) {
           setProducts(response.data.data);
@@ -124,6 +130,7 @@ export default function TransactionForm({ onSuccess }) {
 
   // Process transaction
   const processTransaction = async () => {
+    setIsSubmitting(true);
     if (transactionItems.length === 0) {
       toast.error("Tidak ada item dalam transaksi!");
       return;
@@ -136,12 +143,12 @@ export default function TransactionForm({ onSuccess }) {
     }));
 
     const data = {
-      date_order: "2025-06-14",
+      date_order: new Date().toISOString().split("T")[0],
       customer_id: null,
       customer_name: customerName || null,
       no_telepon: customerPhone || null,
       paid_amount: total,
-      created_by: 1,
+      created_by: user?.id,
       items: payloadItems,
     };
 
@@ -183,6 +190,8 @@ export default function TransactionForm({ onSuccess }) {
         style: { fontFamily: "Poppins, sans-serif" },
       });
       console.error("Error creating transaction:", error);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -669,10 +678,17 @@ export default function TransactionForm({ onSuccess }) {
             {/* Process Transaction Button */}
             <button
               onClick={processTransaction}
-              disabled={transactionItems.length === 0}
-              className="w-full bg-gradient-to-r from-indigo-600 to-indigo-700 text-white py-3 px-6 rounded-lg font-semibold hover:from-indigo-700 hover:to-indigo-800 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
+              disabled={transactionItems.length === 0 || isSubmitting}
+              className="w-full bg-gradient-to-r from-indigo-600 to-indigo-700 text-white py-3 px-6 rounded-lg font-semibold hover:from-indigo-700 hover:to-indigo-800 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg flex items-center justify-center gap-2"
             >
-              Proses Transaksi
+              {isSubmitting ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                  <span>Processing...</span>
+                </>
+              ) : (
+                <span>Proses Transaksi</span>
+              )}
             </button>
           </div>
 

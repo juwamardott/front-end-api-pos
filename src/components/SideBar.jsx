@@ -17,7 +17,7 @@ export default function Sidebar({ isOpen }) {
   const [hoveredItem, setHoveredItem] = useState(null);
 
   const menuItems = [
-    { path: "/", label: "Dashboard", icon: Home },
+    { path: "/home", label: "Dashboard", icon: Home },
     { path: "/transaction", label: "Transaction", icon: ShoppingCart },
     { path: "/product", label: "Product", icon: Package },
     { path: "/reports", label: "Report", icon: ChartArea },

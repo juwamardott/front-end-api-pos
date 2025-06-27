@@ -1,19 +1,17 @@
 import { useState } from "react";
 import Sidebar from "./components/SideBar";
 import Navbar from "./components/Navbar";
+import useAuth from "./store/auth";
 
 export default function Layout({ children }) {
   const [isSidebarOpen, setSidebarOpen] = useState(false);
-
   const toggleSidebar = () => setSidebarOpen(!isSidebarOpen);
   const closeSidebar = () => setSidebarOpen(false);
-  const dummyUser = {
-    name: "Sasa",
-  };
+
 
   return (
     <div>
-      <Navbar toggleSidebar={toggleSidebar} user={dummyUser} />
+      <Navbar toggleSidebar={toggleSidebar} />
       <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
 
       {isSidebarOpen && (

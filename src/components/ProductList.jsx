@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { motion } from "framer-motion";
-import { useLocation, Link } from "react-router-dom";
+import { useLocation, Link, useSearchParams } from "react-router-dom";
 
 export default function ProductList({ reload }) {
   const API_URL = import.meta.env.VITE_API_BASE_URL;
@@ -13,29 +13,40 @@ export default function ProductList({ reload }) {
   const [searchQuery, setSearchQuery] = useState("");
   const encodeId = (id) => btoa(id.toString());
 
+  const [pagination, setPagination] = useState({
+    current_page: 1,
+    last_page: 1,
+  });
+  const [currentPage, setCurrentPage] = useState(1);
+
   useEffect(() => {
     setLoading(true);
     setError(false);
     axios
-      .get(`${API_URL}/products`)
+      .get(`${API_URL}/products?page=${currentPage}`)
       .then((res) => {
-        setProducts(res.data);
-        setFilteredProducts(res.data);
+        setProducts(res.data.data);
+        setFilteredProducts(res.data.data);
         setLoading(false);
+        setPagination({
+          current_page: res.data.data.current_page,
+          last_page: res.data.data.last_page,
+        });
       })
       .catch((err) => {
         console.error("Gagal mengambil data produk:", err);
         setError(true);
         setLoading(false);
       });
-  }, [reload]);
+  }, [reload, currentPage]);
 
   // Filter products berdasarkan search query
   useEffect(() => {
     if (!searchQuery.trim()) {
       setFilteredProducts(products);
+      // console.log(pagination);
     } else {
-      const filtered = products?.data?.filter(
+      const filtered = products.filter(
         (product) =>
           product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
           product.description
@@ -46,7 +57,8 @@ export default function ProductList({ reload }) {
             ?.toLowerCase()
             .includes(searchQuery.toLowerCase())
       );
-      setFilteredProducts({ ...products, data: filtered || [] });
+      setFilteredProducts(filtered);
+      console.log("Filtered result:", filtered);
     }
   }, [searchQuery, products]);
 
@@ -77,7 +89,7 @@ export default function ProductList({ reload }) {
     );
   }
 
-  if (error || !products?.data?.length) {
+  if (error || !filteredProducts?.data.length) {
     return (
       <div className="text-center py-20 poppins-medium">
         <div className="max-w-md mx-auto">
@@ -457,6 +469,45 @@ export default function ProductList({ reload }) {
               </div>
             </motion.div>
           ))}
+        </div>
+      )}
+      {/* Pagination Controls */}
+      {pagination.last_page > 1 && (
+        <div className="mt-10 flex justify-center items-center gap-1 flex-wrap">
+          <button
+            onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
+            disabled={pagination.current_page === 1}
+            className="px-3 py-1 border rounded text-sm bg-white hover:bg-indigo-500 hover:text-white cursor-pointer disabled:opacity-50 shadow-lg border-gray-300"
+          >
+            Prev
+          </button>
+
+          {[...Array(pagination.last_page)].map((_, index) => {
+            const page = index + 1;
+            return (
+              <button
+                key={page}
+                onClick={() => setCurrentPage(page)}
+                className={`px-3 py-1 shadow-lg border border-gray-300 rounded cursor-pointer text-sm ${
+                  page === pagination.current_page
+                    ? "bg-indigo-600 text-white"
+                    : "bg-white hover:bg-gray-100"
+                }`}
+              >
+                {page}
+              </button>
+            );
+          })}
+
+          <button
+            onClick={() =>
+              setCurrentPage((p) => Math.min(p + 1, pagination.last_page))
+            }
+            disabled={pagination.current_page === pagination.last_page}
+            className="px-3 py-1 border rounded text-sm bg-white hover:bg-indigo-500 hover:text-white cursor-pointer disabled:opacity-50 shadow-lg border-gray-300"
+          >
+            Next
+          </button>
         </div>
       )}
     </div>

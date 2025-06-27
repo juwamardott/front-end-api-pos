@@ -49,8 +49,8 @@ export default function DailySales() {
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
       {/* Total Sales */}
       <StatCard
-        title="Total Sales"
-        value={stats.total_sales}
+        title="Today Sales"
+        value={stats.total_sales.toLocaleString("id-ID")}
         description="+12.5% from yesterday"
         gradient="from-blue-500 to-blue-600"
         iconBg="bg-blue-400/30"
