@@ -11,9 +11,11 @@ import {
   CheckCircle,
 } from "lucide-react";
 import toast from "react-hot-toast";
+import useAuth from "../store/auth";
 
 const EditProduct = () => {
   const API_URL = import.meta.env.VITE_API_BASE_URL;
+  const token = useAuth((state) => state.token);
   const { id } = useParams();
   const navigate = useNavigate();
   const decodedId = atob(decodeURIComponent(id));
@@ -38,12 +40,18 @@ const EditProduct = () => {
 
   // Fetch product data and categories
   useEffect(() => {
+    const headers = {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        Accept: "application/json",
+      },
+    };
     const fetchData = async () => {
       try {
         setLoading(true);
         const [productRes, categoriesRes] = await Promise.all([
-          axios.get(`${API_URL}/products/${decodedId}`),
-          axios.get(`${API_URL}/category-product`),
+          axios.get(`${API_URL}/products/${decodedId}`, headers),
+          axios.get(`${API_URL}/category-product`, headers),
         ]);
 
         const product = productRes.data.data;
@@ -132,15 +140,24 @@ const EditProduct = () => {
 
     try {
       setSaving(true);
-      await axios.put(`http://127.0.0.1:8000/api/products/${decodedId}`, {
-        name: formData.name.trim(),
-        sku: formData.sku.trim(),
-        description: formData.description.trim(),
-        price: parseFloat(formData.price),
-        stock: parseInt(formData.stock),
-        category_id: parseInt(formData.category_id),
-        is_active: parseInt(formData.is_active),
-      });
+      await axios.put(
+        `http://127.0.0.1:8000/api/products/${decodedId}`,
+        {
+          name: formData.name.trim(),
+          sku: formData.sku.trim(),
+          description: formData.description.trim(),
+          price: parseFloat(formData.price),
+          stock: parseInt(formData.stock),
+          category_id: parseInt(formData.category_id),
+          is_active: parseInt(formData.is_active),
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: "application/json",
+          },
+        }
+      );
 
       setSuccess(true);
       toast.success("Product successfully updated!", {

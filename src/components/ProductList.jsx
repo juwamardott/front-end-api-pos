@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { motion } from "framer-motion";
 import { useLocation, Link, useSearchParams } from "react-router-dom";
+import useAuth from "../store/auth";
 
 export default function ProductList({ reload }) {
   const API_URL = import.meta.env.VITE_API_BASE_URL;
@@ -11,6 +12,7 @@ export default function ProductList({ reload }) {
   const [error, setError] = useState(false);
   const [viewMode, setViewMode] = useState("grid");
   const [searchQuery, setSearchQuery] = useState("");
+  const token = useAuth((state) => state.token);
   const encodeId = (id) => btoa(id.toString());
 
   const [pagination, setPagination] = useState({
@@ -23,7 +25,12 @@ export default function ProductList({ reload }) {
     setLoading(true);
     setError(false);
     axios
-      .get(`${API_URL}/products?page=${currentPage}`)
+      .get(`${API_URL}/products?page=${currentPage}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: "application/json",
+        },
+      })
       .then((res) => {
         setProducts(res.data.data);
         setFilteredProducts(res.data.data);

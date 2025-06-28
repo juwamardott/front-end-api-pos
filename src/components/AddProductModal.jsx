@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import toast from "react-hot-toast";
 import axios from "axios";
+import useAuth from "../store/auth";
 
 export default function AddProductModal({ onClose, onSuccess }) {
   const [name, setName] = useState("");
@@ -22,10 +23,16 @@ export default function AddProductModal({ onClose, onSuccess }) {
   const [selectedCategoryId, setSelectedCategoryId] = useState(""); // State untuk category yang dipilih
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [category, setCategory] = useState([]);
+  const token = useAuth((state) => state.token);
 
   useEffect(() => {
     axios
-      .get("http://127.0.0.1:8000/api/category-product")
+      .get("http://127.0.0.1:8000/api/category-product", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: "application/json",
+        },
+      })
       .then((res) => {
         setCategory(res.data.data);
         console.log(res.data.data);
@@ -102,7 +109,7 @@ export default function AddProductModal({ onClose, onSuccess }) {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          // Authorization: `Bearer ${your_token}` (jika pakai auth)
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(data),
       });

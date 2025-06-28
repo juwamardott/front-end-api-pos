@@ -24,7 +24,7 @@ export default function TransactionForm({ onSuccess }) {
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [showSearchDropdown, setShowSearchDropdown] = useState(false);
   const user = useAuth((state) => state.user);
-
+  const token = useAuth((state) => state.token);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Fetch products dari API
@@ -33,7 +33,13 @@ export default function TransactionForm({ onSuccess }) {
       try {
         setLoading(true);
         const response = await axios.get(
-          "http://127.0.0.1:8000/api/transaction/products"
+          "http://127.0.0.1:8000/api/transaction/products",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              Accept: "application/json",
+            },
+          }
         );
 
         if (response.data && response.data.data) {
@@ -156,8 +162,8 @@ export default function TransactionForm({ onSuccess }) {
       const res = await fetch("http://127.0.0.1:8000/api/transactions", {
         method: "POST",
         headers: {
+          Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
-          // Authorization: `Bearer ${your_token}` (jika pakai auth)
         },
 
         body: JSON.stringify(data),

@@ -11,12 +11,13 @@ import {
 import { useState } from "react";
 import useAuth from "../store/auth";
 import toast from "react-hot-toast";
-
+import axios from "axios";
 export default function Navbar({ toggleSidebar }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const API_URL = import.meta.env.VITE_API_BASE_URL;
   const user = useAuth((state) => state.user);
+  const token = useAuth((state) => state.token);
   const { logout } = useAuth();
-  console.log(user);
   const handleUserClick = () => {
     setIsModalOpen(true);
   };
@@ -25,10 +26,26 @@ export default function Navbar({ toggleSidebar }) {
     setIsModalOpen(false);
   };
 
-  const handleLogout = () => {
-    logout();
-    toast.success("Berhasil Logout");
-    setIsModalOpen(false);
+  const handleLogout = async () => {
+    try {
+      await axios.post(
+        `${API_URL}/auth/logout`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: "application/json",
+          },
+        }
+      );
+
+      logout(); // function dari context/store kamu
+      toast.success("Berhasil Logout");
+      setIsModalOpen(false);
+    } catch (error) {
+      toast.error("Gagal logout");
+      console.error(error);
+    }
   };
 
   const handleChangePassword = () => {

@@ -12,7 +12,7 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
-
+  const role = null;
   const navigate = useNavigate();
   const { login } = useAuth();
   const handleSubmit = async (e) => {
@@ -20,23 +20,40 @@ export default function Login() {
     // Simulasi loading
     e.preventDefault();
     try {
-      const res = await axios.post(`${API_URL}/auth/login`, {
-        email,
-        password,
-        device_name,
-      });
+      const res = await axios.post(
+        `${API_URL}/auth/login`,
+        {
+          email,
+          password,
+          device_name,
+        },
+        {
+          headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
-      login(res.data.data.user, res.data.data.access_token);
-      console.log(res.data.data.access_token);
+      if (
+        res.data.data.user.role_id.id == 4 ||
+        res.data.data.user.role_id.id == 1
+      ) {
+        login(res.data.data.user, res.data.data.access_token);
+        navigate("/home");
+        toast.success("Login Succesfull");
+      } else {
+        toast.error("Akun tidak ada akses masuk !!");
+      }
       setIsLoading(false);
-      navigate("/home");
-      toast.success("Login Succesfull");
     } catch (error) {
       if (error.response) {
         toast.error(error.response.data.message || "Terjadi kesalahan");
+        console.log(error.response.data.message);
       } else {
         toast.error("Gagal terhubung ke server");
       }
+      console.log(error);
       setIsLoading(false);
     } finally {
       setIsLoading(false);
