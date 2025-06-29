@@ -9,6 +9,7 @@ import {
   Store,
   ChartArea,
   Sparkles,
+  Gauge,
 } from "lucide-react";
 import useAuth from "../store/auth";
 export default function Sidebar({ isOpen }) {
@@ -21,7 +22,7 @@ export default function Sidebar({ isOpen }) {
     role === 4
       ? [
           // Superadmin (role 4) → lihat semua menu
-          { path: "/home", label: "Dashboard", icon: Home },
+          { path: "/home", label: "Overview", icon: Gauge },
           { path: "/transaction", label: "Transaction", icon: ShoppingCart },
           { path: "/product", label: "Product", icon: Package },
           { path: "/reports", label: "Report", icon: ChartArea },

@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
 import useAuth from "../store/auth";
+import useProductStore from "../store/productStore";
 
 export default function TransactionForm({ onSuccess }) {
   // ✅ Tambahkan props onSuccess
@@ -17,8 +18,7 @@ export default function TransactionForm({ onSuccess }) {
   const [change, setChange] = useState(0);
 
   // State untuk API dan search
-  const [products, setProducts] = useState([]); // Initialize as empty array
-  const [loading, setLoading] = useState(true);
+  const { products, fetchProducts, loading } = useProductStore();
   const [error, setError] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredProducts, setFilteredProducts] = useState([]);
@@ -29,37 +29,14 @@ export default function TransactionForm({ onSuccess }) {
 
   // Fetch products dari API
   useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        setLoading(true);
-        const response = await axios.get(
-          "http://127.0.0.1:8000/api/transaction/products",
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              Accept: "application/json",
-            },
-          }
-        );
+    fetchProducts(token); // pertama kali
 
-        if (response.data && response.data.data) {
-          setProducts(response.data.data);
-          setFilteredProducts(response.data.data);
-          setError(""); // ✅ Reset error jika berhasil
-        } else {
-          setError("Data format tidak sesuai");
-        }
-      } catch (err) {
-        setError("Gagal memuat data produk");
-        // ✅ Hapus console.error jika tidak ingin tampil di console
-        // console.error("Error fetching products:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
+    const interval = setInterval(() => {
+      fetchProducts(token, true); // force refresh tiap 5 menit
+    }, 5 * 60 * 1000); // 5 menit
 
-    fetchProducts();
-  }, []);
+    return () => clearInterval(interval); // bersihkan saat unmount
+  }, [token, fetchProducts]);
 
   // Filter produk berdasarkan search term
   useEffect(() => {

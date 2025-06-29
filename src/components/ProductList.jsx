@@ -3,7 +3,7 @@ import axios from "axios";
 import { motion } from "framer-motion";
 import { useLocation, Link, useSearchParams } from "react-router-dom";
 import useAuth from "../store/auth";
-
+import debounce from "lodash/debounce";
 export default function ProductList({ reload }) {
   const API_URL = import.meta.env.VITE_API_BASE_URL;
   const [products, setProducts] = useState([]);
@@ -13,6 +13,7 @@ export default function ProductList({ reload }) {
   const [viewMode, setViewMode] = useState("grid");
   const [searchQuery, setSearchQuery] = useState("");
   const token = useAuth((state) => state.token);
+  const [inputValue, setInputValue] = useState("");
   const encodeId = (id) => btoa(id.toString());
 
   const [pagination, setPagination] = useState({
@@ -21,62 +22,55 @@ export default function ProductList({ reload }) {
   });
   const [currentPage, setCurrentPage] = useState(1);
 
+  // ✅ Fetch data saat searchQuery atau currentPage berubah
   useEffect(() => {
     setLoading(true);
     setError(false);
+
     axios
-      .get(`${API_URL}/products?page=${currentPage}`, {
+      .get(`${API_URL}/products`, {
         headers: {
           Authorization: `Bearer ${token}`,
           Accept: "application/json",
         },
+        params: {
+          page: currentPage,
+          search: searchQuery || undefined,
+        },
       })
       .then((res) => {
-        setProducts(res.data.data);
-        setFilteredProducts(res.data.data);
-        setLoading(false);
+        const data = res.data.data;
+        setProducts(data.data);
         setPagination({
-          current_page: res.data.data.current_page,
-          last_page: res.data.data.last_page,
+          current_page: data.current_page,
+          last_page: data.last_page,
         });
       })
       .catch((err) => {
         console.error("Gagal mengambil data produk:", err);
         setError(true);
-        setLoading(false);
-      });
-  }, [reload, currentPage]);
+      })
+      .finally(() => setLoading(false));
+  }, [searchQuery, currentPage]);
 
-  // Filter products berdasarkan search query
-  useEffect(() => {
-    if (!searchQuery.trim()) {
-      setFilteredProducts(products);
-      // console.log(pagination);
-    } else {
-      const filtered = products.filter(
-        (product) =>
-          product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          product.description
-            ?.toLowerCase()
-            .includes(searchQuery.toLowerCase()) ||
-          product.sku?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          product.category?.category_name
-            ?.toLowerCase()
-            .includes(searchQuery.toLowerCase())
-      );
-      setFilteredProducts(filtered);
-      console.log("Filtered result:", filtered);
-    }
-  }, [searchQuery, products]);
-
-  // Handle search input change
-  const handleSearchChange = (e) => {
-    setSearchQuery(e.target.value);
+  // ✅ Input typing
+  const handleSearchInputChange = (e) => {
+    setInputValue(e.target.value);
   };
 
-  // Clear search
+  // ✅ Tekan Enter untuk cari
+  const handleSearchKeyDown = (e) => {
+    if (e.key === "Enter") {
+      setSearchQuery(inputValue);
+      setCurrentPage(1); // reset page saat cari
+    }
+  };
+
+  // ✅ Clear pencarian
   const clearSearch = () => {
+    setInputValue("");
     setSearchQuery("");
+    setCurrentPage(1);
   };
 
   if (loading) {
@@ -96,7 +90,7 @@ export default function ProductList({ reload }) {
     );
   }
 
-  if (error || !filteredProducts?.data.length) {
+  if (error || !products?.length) {
     return (
       <div className="text-center py-20 poppins-medium">
         <div className="max-w-md mx-auto">
@@ -155,8 +149,9 @@ export default function ProductList({ reload }) {
           <input
             type="text"
             placeholder="Search products by name, description, SKU, or category..."
-            value={searchQuery}
-            onChange={handleSearchChange}
+            value={inputValue}
+            onChange={handleSearchInputChange} // ⬅ ini harus update inputValue
+            onKeyDown={handleSearchKeyDown}
             className="w-full pl-10 pr-12 py-3 border-2 border-gray-200 rounded-xl focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/20 transition-all duration-200 outline-none"
           />
           {searchQuery && (
@@ -249,7 +244,7 @@ export default function ProductList({ reload }) {
       </div>
 
       {/* No Results Message */}
-      {filteredProducts.data?.length === 0 && searchQuery && (
+      {products?.length === 0 && searchQuery && (
         <div className="text-center py-16">
           <div className="max-w-md mx-auto px-4">
             <div className="bg-gray-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
@@ -285,9 +280,9 @@ export default function ProductList({ reload }) {
       )}
 
       {/* Grid View */}
-      {viewMode === "grid" && filteredProducts.data?.length > 0 && (
+      {viewMode === "grid" && products?.length > 0 && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {filteredProducts.data.map((product, index) => (
+          {products.map((product, index) => (
             <motion.div
               key={product.id}
               initial={{ opacity: 0, y: 20 }}
@@ -308,7 +303,7 @@ export default function ProductList({ reload }) {
                     Stock: {product.stock[0]?.quantity || 0}
                   </span>
                 </div>
-                {product.stock[0]?.quantity <= 5 && (
+                {product.stock[0]?.quantity <= 10 && (
                   <div className="absolute top-3 left-3">
                     <span className="bg-red-500 text-white px-2 py-1 rounded-full text-xs font-medium">
                       Low Stock
@@ -345,7 +340,7 @@ export default function ProductList({ reload }) {
                   </div>
                   <Link to={`/product/${encodeId(product.id)}`}>
                     <button className="text-sm bg-indigo-600 hover:bg-indigo-700 text-white px-2 py-2 rounded-lg transition-colors font-medium">
-                      Manage
+                      Details
                     </button>
                   </Link>
                 </div>
@@ -356,9 +351,9 @@ export default function ProductList({ reload }) {
       )}
 
       {/* List View - Fully Responsive */}
-      {viewMode === "list" && filteredProducts.data?.length > 0 && (
+      {viewMode === "list" && products?.length > 0 && (
         <div className="space-y-4">
-          {filteredProducts.data.map((product, index) => (
+          {products.map((product, index) => (
             <motion.div
               key={product.id}
               initial={{ opacity: 0, x: -20 }}
@@ -396,8 +391,8 @@ export default function ProductList({ reload }) {
 
                       <div className="flex items-center gap-4 text-sm text-gray-500 flex-wrap">
                         {product.sku && <span>SKU: {product.sku}</span>}
-                        <span>Stock: {product.stock || 0}</span>
-                        {product.stock <= 5 && (
+                        <span>Stock: {product.stock[0]?.quantity || 0}</span>
+                        {product.stock[0]?.quantity <= 10 && (
                           <span className="text-red-500 font-medium">
                             Low Stock
                           </span>
@@ -411,7 +406,7 @@ export default function ProductList({ reload }) {
                       </p>
                       <Link to={`/product/${encodeId(product.id)}`}>
                         <button className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg transition-colors text-sm font-medium">
-                          View Details
+                          Details
                         </button>
                       </Link>
                     </div>
@@ -460,7 +455,7 @@ export default function ProductList({ reload }) {
                       </span>
                     )}
                     <span>Stock: {product.stock[0]?.quantity || 0}</span>
-                    {product.stock[0]?.quantity <= 5 && (
+                    {product.stock[0]?.quantity <= 10 && (
                       <span className="text-red-500 font-medium whitespace-nowrap">
                         Low Stock
                       </span>
@@ -469,7 +464,7 @@ export default function ProductList({ reload }) {
 
                   <Link to={`/product/${encodeId(product.id)}`}>
                     <button className="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-2 rounded-lg transition-colors text-sm font-medium">
-                      View
+                      Details
                     </button>
                   </Link>
                 </div>

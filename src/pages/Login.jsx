@@ -49,11 +49,9 @@ export default function Login() {
     } catch (error) {
       if (error.response) {
         toast.error(error.response.data.message || "Terjadi kesalahan");
-        console.log(error.response.data.message);
       } else {
         toast.error("Gagal terhubung ke server");
       }
-      console.log(error);
       setIsLoading(false);
     } finally {
       setIsLoading(false);

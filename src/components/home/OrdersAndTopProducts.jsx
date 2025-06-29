@@ -202,7 +202,7 @@ export default function OrdersAndTopProducts() {
                     {product.product.name}
                   </p>
                   <p className="text-xs text-gray-500">
-                    {product.product.stock} stock
+                    {product.product.stock[0]?.quantity} stock
                   </p>
                 </div>
                 <div className="text-right">

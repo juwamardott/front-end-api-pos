@@ -12,6 +12,7 @@ import {
 import toast from "react-hot-toast";
 import axios from "axios";
 import useAuth from "../store/auth";
+import useProductStore from "../store/productStore";
 
 export default function AddProductModal({ onClose, onSuccess }) {
   const [name, setName] = useState("");
@@ -24,6 +25,7 @@ export default function AddProductModal({ onClose, onSuccess }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [category, setCategory] = useState([]);
   const token = useAuth((state) => state.token);
+  const { fetchProducts } = useProductStore();
 
   useEffect(() => {
     axios
@@ -123,6 +125,8 @@ export default function AddProductModal({ onClose, onSuccess }) {
       toast.success("Product successfully added!", {
         style: { fontFamily: "Poppins, sans-serif" },
       });
+
+      fetchProducts(token, true);
 
       // ✅ Panggil onSuccess untuk trigger re-render ProductList
       onSuccess();
