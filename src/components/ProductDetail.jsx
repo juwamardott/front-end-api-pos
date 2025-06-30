@@ -186,11 +186,19 @@ const EditProduct = () => {
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-gray-100 flex items-center justify-center px-4">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 sm:h-16 sm:w-16 border-b-4 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600 text-base sm:text-lg font-medium">
-            Loading...
-          </p>
+        <div className="flex flex-col justify-center items-center py-20 poppins-medium">
+          <div className="relative">
+            <div className="w-16 h-16 border-4 border-indigo-200 rounded-full animate-spin"></div>
+            <div className="w-16 h-16 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin absolute top-0 left-0"></div>
+          </div>
+          <div className="mt-6 text-center">
+            <p className="text-indigo-600 text-lg font-semibold">
+              Loading Products
+            </p>
+            <p className="text-gray-500 text-sm mt-1">
+              Please wait a moment...
+            </p>
+          </div>
         </div>
       </div>
     );

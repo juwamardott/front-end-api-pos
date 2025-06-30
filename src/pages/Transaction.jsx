@@ -113,6 +113,10 @@ export default function TransactionForm({ onSuccess }) {
 
   // Process transaction
   const processTransaction = async () => {
+    if (cash == "") {
+      toast.error("Input pembayaran terlebih dahulu!!");
+      return;
+    }
     setIsSubmitting(true);
     if (transactionItems.length === 0) {
       toast.error("Tidak ada item dalam transaksi!");
@@ -208,8 +212,8 @@ export default function TransactionForm({ onSuccess }) {
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mt-10">
         <div>
-          <h1 className="text-3xl font-bold text-gray-800">New Transaksi</h1>
-          <p className="text-gray-600 mt-1">
+          <h1 className="text-xl font-bold text-gray-800">New Transaksi</h1>
+          <p className="text-gray-600 mt-1 text-sm">
             Create New Transaction for Customer
           </p>
         </div>
