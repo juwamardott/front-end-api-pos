@@ -12,52 +12,56 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
-  const role = null;
+  const [role, setRole] = useState(null); //
+
   const navigate = useNavigate();
   const { login } = useAuth();
   const handleSubmit = async (e) => {
-    setIsLoading(true);
-    // Simulasi loading
     e.preventDefault();
-    try {
-      const res = await axios.post(
-        `${API_URL}/auth/login`,
-        {
-          email,
-          password,
-          device_name,
-        },
-        {
-          headers: {
-            Accept: "application/json",
-            "Content-Type": "application/json",
-          },
-        }
-      );
+    setIsLoading(true);
 
-      if (
-        res.data.data.user.role_id.id == 4 ||
-        res.data.data.user.role_id.id == 1
+    try {
+      const res = await axios.post(`${API_URL}/auth/login`, {
+        email,
+        password,
+        device_name,
+      });
+
+      const user = res.data.data.user;
+      const accessToken = res.data.data.access_token;
+      const userRole = user.role.role;
+      const branch = user.branch.id;
+      setRole(userRole); // ✅ simpan ke state
+
+      login(user, accessToken, branch);
+
+      const normalizedRole = userRole?.trim().toLowerCase();
+      console.log(`[${normalizedRole}]`);
+
+      if (["cashier", "superadmin cashier"].includes(normalizedRole)) {
+        toast.success("Login sebagai Cashier");
+        navigate("/pos/home");
+      } else if (
+        ["warehouse", "superadmin warehouse"].includes(normalizedRole)
       ) {
-        login(res.data.data.user, res.data.data.access_token);
-        navigate("/home");
-        toast.success("Login Succesfull");
+        toast.success("Login sebagai Warehouse");
+        navigate("/warehouse/home");
+      } else if (
+        ["accounting", "superadmin accounting"].includes(normalizedRole)
+      ) {
+        toast.success("Login sebagai Accounting");
+        navigate("/acc/home");
       } else {
-        toast.error("Akun tidak ada akses masuk !!");
+        toast.error("Role tidak memiliki akses masuk!");
+        console.log("ROLE TIDAK VALID:", normalizedRole);
       }
-      setIsLoading(false);
     } catch (error) {
-      if (error.response) {
-        toast.error(error.response.data.message || "Terjadi kesalahan");
-      } else {
-        toast.error("Gagal terhubung ke server");
-      }
-      setIsLoading(false);
+      console.error(error);
+      toast.error(error?.response?.data?.message || "Terjadi kesalahan");
     } finally {
       setIsLoading(false);
     }
   };
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-indigo-800 to-purple-900 flex items-center justify-center p-4">
       {/* Background Pattern */}

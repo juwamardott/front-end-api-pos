@@ -8,7 +8,6 @@ export default function Layout({ children }) {
   const toggleSidebar = () => setSidebarOpen(!isSidebarOpen);
   const closeSidebar = () => setSidebarOpen(false);
 
-
   return (
     <div>
       <Navbar toggleSidebar={toggleSidebar} />

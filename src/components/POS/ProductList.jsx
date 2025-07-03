@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { motion } from "framer-motion";
 import { useLocation, Link, useSearchParams } from "react-router-dom";
-import useAuth from "../store/auth";
+import useAuth from "../../store/auth";
 import debounce from "lodash/debounce";
 export default function ProductList({ reload }) {
   const API_URL = import.meta.env.VITE_API_BASE_URL;

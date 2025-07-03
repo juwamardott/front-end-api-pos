@@ -2,22 +2,23 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { Toaster } from "react-hot-toast"; // ✅ Import toast
 
 import Layout from "./Layout";
-import Home from "./pages/Home";
+import Home from "./pages/POS/Home";
+import WarehouseDashboard from "./pages/Warehouse/WarehouseDashboard";
 import Login from "./pages/Login";
 import PrivateRoute from "./routes/PrivateRoute";
-import Product from "./pages/Product";
-import Transaction from "./pages/Transaction";
-import Reports from "./pages/Reports";
-import ProductDetail from "./components/ProductDetail";
+import Product from "./pages/POS/Product";
+import Transaction from "./pages/POS/Transaction";
+import Reports from "./pages/POS/Reports";
+import ProductDetail from "./components/POS/ProductDetail";
 
 function App() {
   return (
     <Router>
       {/* ✅ Global Toast Component */}
       <Toaster
-        position="top-right"
+        position="bottom-right"
         toastOptions={{
-          className: "poppins-medium text-sm", // ✅ Poppins
+          className: "poppins-medium text-md", // ✅ Poppins
         }}
       />
 
@@ -29,11 +30,16 @@ function App() {
             <PrivateRoute>
               <Layout>
                 <Routes>
-                  <Route path="/home" element={<Home />} />
-                  <Route path="/product" element={<Product />} />
-                  <Route path="/product/:id" element={<ProductDetail />} />
-                  <Route path="/transaction" element={<Transaction />} />
-                  <Route path="/reports" element={<Reports />} />
+                  <Route path="/pos/home" element={<Home />} />
+                  <Route path="/pos/product" element={<Product />} />
+                  <Route path="/pos/product/:id" element={<ProductDetail />} />
+                  <Route path="/pos/transaction" element={<Transaction />} />
+                  <Route path="/pos/reports" element={<Reports />} />
+
+                  <Route
+                    path="/warehouse/home"
+                    element={<WarehouseDashboard />}
+                  />
                 </Routes>
               </Layout>
             </PrivateRoute>

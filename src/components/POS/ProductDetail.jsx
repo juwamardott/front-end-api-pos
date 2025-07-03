@@ -11,7 +11,7 @@ import {
   CheckCircle,
 } from "lucide-react";
 import toast from "react-hot-toast";
-import useAuth from "../store/auth";
+import useAuth from "../../store/auth";
 
 const EditProduct = () => {
   const API_URL = import.meta.env.VITE_API_BASE_URL;

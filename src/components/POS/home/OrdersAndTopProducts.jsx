@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import axios from "axios";
 import { Loader2 } from "lucide-react";
-import useAuth from "../../store/auth";
+import useAuth from "../../../store/auth";
 
 export default function OrdersAndTopProducts() {
   const API_URL = import.meta.env.VITE_API_BASE_URL;
@@ -16,16 +16,21 @@ export default function OrdersAndTopProducts() {
   const [loadingTopProducts, setLoadingTopProducts] = useState(true);
   const [errorTopProducts, setErrorTopProducts] = useState(null);
   const token = useAuth((state) => state.token);
+  const branch = useAuth((state) => state.branch);
 
   useEffect(() => {
     const fetchTransactions = async () => {
       try {
-        const res = await axios.get(`${API_URL}/transactions`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            Accept: "application/json",
-          },
-        });
+        const res = await axios.post(
+          `${API_URL}/reports/recent-orders`,
+          { branch_id: branch },
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              Accept: "application/json",
+            },
+          }
+        );
         setTransactions(res.data?.data || []);
         setErrorTransactions(null);
       } catch (err) {
@@ -37,12 +42,16 @@ export default function OrdersAndTopProducts() {
 
     const fetchTopProducts = async () => {
       try {
-        const res = await axios.get(`${API_URL}/reports/top-product`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            Accept: "application/json",
-          },
-        });
+        const res = await axios.post(
+          `${API_URL}/reports/top-product`,
+          { branch_id: branch },
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              Accept: "application/json",
+            },
+          }
+        );
         setTopProducts(res.data?.data || []);
         setErrorTopProducts(null);
       } catch (err) {

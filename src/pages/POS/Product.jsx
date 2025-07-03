@@ -1,6 +1,6 @@
 import { useState } from "react";
-import ProductList from "../components/ProductList";
-import AddProductModal from "../components/AddProductModal";
+import ProductList from "../../components/POS/ProductList";
+import AddProductModal from "../../components/POS/AddProductModal";
 
 export default function Product() {
   const [showModal, setShowModal] = useState(false);

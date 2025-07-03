@@ -2,9 +2,8 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import axios from "axios";
 import { Loader2 } from "lucide-react";
-import DailySales from "../components/home/DailySales";
-import OrdersAndTopProducts from "../components/home/OrdersAndTopProducts";
-
+import DailySales from "../../components/POS/home/DailySales";
+import OrdersAndTopProducts from "../../components/POS/home/OrdersAndTopProducts";
 export default function Home() {
   return (
     <div className="space-y-6 poppins-medium">

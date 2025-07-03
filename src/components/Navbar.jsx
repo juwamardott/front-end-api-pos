@@ -54,7 +54,7 @@ export default function Navbar({ toggleSidebar }) {
 
   return (
     <>
-      <nav className="bg-white/80 backdrop-blur-lg shadow-lg border-b border-gray-200/50 p-4 flex justify-between items-center md:ml-64 fixed top-0 left-0 right-0 z-40">
+      <nav className="bg-white/20 backdrop-blur-lg shadow-md border-b border-gray-200/50 p-4 flex justify-between items-center md:ml-64 fixed top-0 left-0 right-0 z-40">
         {/* Left Section */}
         <div className="flex items-center gap-4">
           {/* Toggle button for mobile */}
@@ -66,14 +66,14 @@ export default function Navbar({ toggleSidebar }) {
           </button>
 
           {/* Search Bar - Hidden on mobile */}
-          <div className="hidden md:flex items-center bg-gray-50 rounded-xl px-4 py-2 min-w-[300px] border border-gray-200 focus-within:border-indigo-300 focus-within:ring-4 focus-within:ring-indigo-50 transition-all duration-200">
+          {/* <div className="hidden md:flex items-center bg-gray-50 rounded-xl px-4 py-2 min-w-[300px] border border-gray-200 focus-within:border-indigo-300 focus-within:ring-4 focus-within:ring-indigo-50 transition-all duration-200">
             <Search className="w-5 h-5 text-gray-400 mr-3" />
             <input
               type="text"
               placeholder="Search products, transactions..."
               className="bg-transparent outline-none flex-1 text-gray-600 placeholder-gray-400 text-sm"
             />
-          </div>
+          </div> */}
         </div>
 
         {/* Right Section */}
@@ -104,7 +104,7 @@ export default function Navbar({ toggleSidebar }) {
               <p className="text-sm font-semibold text-gray-800">
                 {user?.name || "John Doe"}
               </p>
-              <p className="text-xs text-gray-500">{user?.role}</p>
+              <p className="text-xs text-gray-500">{user?.role.role}</p>
             </div>
 
             {/* Dropdown Arrow */}
@@ -127,7 +127,7 @@ export default function Navbar({ toggleSidebar }) {
                   <h3 className="text-lg font-semibold text-gray-800">
                     {user?.name}
                   </h3>
-                  <p className="text-sm text-gray-500">{user?.role}</p>
+                  <p className="text-sm text-gray-500">{user?.role.role}</p>
                 </div>
               </div>
               <button

@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
-import useAuth from "../store/auth";
-import useProductStore from "../store/productStore";
+import useAuth from "../../store/auth";
+import useProductStore from "../../store/productStore";
 
-export default function TransactionForm({ onSuccess }) {
+export default function Transaction({ onSuccess }) {
   // ✅ Tambahkan props onSuccess
   const [transactionItems, setTransactionItems] = useState([]);
   const [selectedProduct, setSelectedProduct] = useState("");
@@ -13,7 +13,7 @@ export default function TransactionForm({ onSuccess }) {
   const [customerPhone, setCustomerPhone] = useState("");
   const [paymentMethod, setPaymentMethod] = useState("cash");
   const [discount, setDiscount] = useState(0);
-  const [tax, setTax] = useState(10); // 10% tax
+  const [tax, setTax] = useState(11);
   const [cash, setCash] = useState("");
   const [change, setChange] = useState(0);
 
@@ -23,9 +23,10 @@ export default function TransactionForm({ onSuccess }) {
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [showSearchDropdown, setShowSearchDropdown] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const user = useAuth((state) => state.user);
   const token = useAuth((state) => state.token);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const branch = useAuth((state) => state.branch);
 
   // Fetch products dari API
   useEffect(() => {
@@ -137,46 +138,44 @@ export default function TransactionForm({ onSuccess }) {
       paid_amount: total,
       created_by: user?.id,
       items: payloadItems,
+      branch_id: branch,
     };
 
     try {
-      const res = await fetch("http://127.0.0.1:8000/api/transactions", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
+      const response = await axios.post(
+        "http://127.0.0.1:8000/api/transactions",
+        data,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
-        body: JSON.stringify(data),
-      });
-
-      if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.message || "Failed to create Transactions");
-      }
-
-      // ✅ Tampilkan toast sukses
       toast.success("Transaksi berhasil dibuat!", {
         style: { fontFamily: "Poppins, sans-serif" },
       });
 
-      // ✅ Reset form setelah berhasil
+      // Reset form
       setTransactionItems([]);
       setCustomerName("");
       setCustomerPhone("");
       setDiscount(0);
       setPaymentMethod("cash");
 
-      // ✅ Panggil onSuccess jika ada
+      // Jalankan callback jika ada
       if (onSuccess && typeof onSuccess === "function") {
         onSuccess();
       }
     } catch (error) {
-      // ✅ Handle error dengan toast
-      toast.error(error.message || "Gagal membuat transaksi!", {
-        style: { fontFamily: "Poppins, sans-serif" },
-      });
       console.error("Error creating transaction:", error);
+      toast.error(
+        error?.response?.data?.message || "Gagal membuat transaksi!",
+        {
+          style: { fontFamily: "Poppins, sans-serif" },
+        }
+      );
     } finally {
       setIsSubmitting(false);
     }

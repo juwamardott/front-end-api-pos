@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import axios from "axios";
 import { Loader2 } from "lucide-react";
-import useAuth from "../../store/auth";
+import useAuth from "../../../store/auth";
 
 export default function DailySales() {
   const API_URL = import.meta.env.VITE_API_BASE_URL;
@@ -10,16 +10,21 @@ export default function DailySales() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const token = useAuth((state) => state.token);
+  const branch = useAuth((state) => state.branch);
 
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const response = await axios.get(`${API_URL}/reports/daily-sales`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            Accept: "application/json",
-          },
-        });
+        const response = await axios.post(
+          `${API_URL}/reports/daily-sales`,
+          { branch_id: branch },
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              Accept: "application/json",
+            },
+          }
+        );
         setData(response.data);
         setError("");
       } catch (err) {

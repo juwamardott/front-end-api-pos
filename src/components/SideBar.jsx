@@ -10,29 +10,69 @@ import {
   ChartArea,
   Sparkles,
   Gauge,
+  PackageCheck,
 } from "lucide-react";
 import useAuth from "../store/auth";
 export default function Sidebar({ isOpen }) {
   const location = useLocation();
   const currentPath = location.pathname;
   const [hoveredItem, setHoveredItem] = useState(null);
-  const role = useAuth((state) => state.user?.role_id.id);
+  const role = useAuth((state) => state.user?.role.id);
+  let menuItems = [];
 
-  const menuItems =
-    role === 4
-      ? [
-          // Superadmin (role 4) → lihat semua menu
-          { path: "/home", label: "Overview", icon: Gauge },
-          { path: "/transaction", label: "Transaction", icon: ShoppingCart },
-          { path: "/product", label: "Product", icon: Package },
-          { path: "/reports", label: "Report", icon: ChartArea },
-          { path: "/settings", label: "Settings", icon: Settings },
-        ]
-      : [
-          // Role lain → lihat menu terbatas
-          { path: "/home", label: "Dashboard", icon: Home },
-          { path: "/transaction", label: "Transaction", icon: ShoppingCart },
-        ];
+  switch (role) {
+    case 1: // Chasier
+      menuItems = [
+        { path: "/pos/home", label: "Dashboard", icon: Home },
+        { path: "/pos/transaction", label: "Transaction", icon: ShoppingCart },
+      ];
+      break;
+
+    case 2: // Warehouse
+      menuItems = [
+        { path: "/pos/home", label: "Overview", icon: Gauge },
+        { path: "/pos/transaction", label: "Transaction", icon: ShoppingCart },
+        { path: "/pos/reports", label: "Report", icon: ChartArea },
+        { path: "/pos/settings", label: "Settings", icon: Settings },
+      ];
+      break;
+
+    case 3: // Accounting
+      menuItems = [
+        { path: "/acc/home", label: "Dashboard", icon: Home },
+        { path: "/acc/reports", label: "Report", icon: ChartArea },
+      ];
+      break;
+
+    case 4: // Superadmin Chasier
+      menuItems = [
+        { path: "/pos/home", label: "Overview", icon: Gauge },
+        { path: "/pos/transaction", label: "Transaction", icon: ShoppingCart },
+        { path: "/pos/reports", label: "Report", icon: ChartArea },
+        { path: "/pos/settings", label: "Settings", icon: Settings },
+      ];
+      break;
+
+    case 5: // Superadmin Warehouse
+      menuItems = [
+        { path: "/warehouse/home", label: "Overview", icon: Gauge },
+        { path: "/warehouse/po", label: "Purchase Order", icon: Package },
+        { path: "/warehouse/Receive", label: "Receive", icon: PackageCheck },
+        { path: "/warehouse/settings", label: "Settings", icon: Settings },
+      ];
+      break;
+
+    case 6: // Superadmin Accounting
+      menuItems = [
+        { path: "/acc/home", label: "Overview", icon: Gauge },
+        { path: "/acc/reports", label: "Report", icon: ChartArea },
+        { path: "/acc/settings", label: "Settings", icon: Settings },
+      ];
+      break;
+
+    default:
+      menuItems = [{ path: "/home", label: "Dashboard", icon: Home }];
+  }
   const isActive = (path) => currentPath === path;
 
   return (
