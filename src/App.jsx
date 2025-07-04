@@ -14,11 +14,10 @@ import ProductDetail from "./components/POS/ProductDetail";
 function App() {
   return (
     <Router>
-      {/* ✅ Global Toast Component */}
       <Toaster
         position="bottom-right"
         toastOptions={{
-          className: "poppins-medium text-md", // ✅ Poppins
+          className: "poppins-medium text-md",
         }}
       />
 
@@ -31,7 +30,7 @@ function App() {
               <Layout>
                 <Routes>
                   <Route path="/pos/home" element={<Home />} />
-                  <Route path="/pos/product" element={<Product />} />
+                  <Route path="/pos/products" element={<Product />} />
                   <Route path="/pos/product/:id" element={<ProductDetail />} />
                   <Route path="/pos/transaction" element={<Transaction />} />
                   <Route path="/pos/reports" element={<Reports />} />

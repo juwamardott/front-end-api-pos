@@ -25,11 +25,13 @@ export default function AddProductModal({ onClose, onSuccess }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [category, setCategory] = useState([]);
   const token = useAuth((state) => state.token);
+  const branch = useAuth((state) => state.branch);
+  const API_URL = import.meta.env.VITE_API_BASE_URL;
   const { fetchProducts } = useProductStore();
 
   useEffect(() => {
     axios
-      .get("http://127.0.0.1:8000/api/category-product", {
+      .get(`${API_URL}/category-product`, {
         headers: {
           Authorization: `Bearer ${token}`,
           Accept: "application/json",
@@ -102,41 +104,31 @@ export default function AddProductModal({ onClose, onSuccess }) {
       description: description.trim(),
       price: priceInt,
       stock: isNaN(stockInt) ? 0 : stockInt,
-      category_id: categoryId, // Menggunakan kategori yang dipilih
+      category_id: categoryId,
       is_active: 1,
+      branch_id: branch,
     };
 
     try {
-      const res = await fetch("http://localhost:8000/api/products", {
-        method: "POST",
+      const res = await axios.post(`${API_URL}/products`, data, {
         headers: {
-          "Content-Type": "application/json",
+          Accept: "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(data),
       });
 
-      if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.message || "Failed to create product");
-      }
-
-      // ✅ Tampilkan toast sukses
-      toast.success("Product successfully added!", {
-        style: { fontFamily: "Poppins, sans-serif" },
-      });
+      toast.success("Product successfully added!");
 
       fetchProducts(token, true);
-
-      // ✅ Panggil onSuccess untuk trigger re-render ProductList
       onSuccess();
     } catch (error) {
       console.error("Error:", error);
-      toast.error(error.message);
+      toast.error(error?.response?.data?.message || "Failed to create product");
     } finally {
       setIsSubmitting(false);
     }
   };
+
   return (
     <div className="fixed inset-0 bg-gradient-to-br from-black/60 via-black/50 to-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-3 sm:p-4 lg:p-6">
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl xl:max-w-3xl transform transition-all duration-300 max-h-[95vh] overflow-y-auto">

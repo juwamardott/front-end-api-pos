@@ -48,6 +48,7 @@ export default function Sidebar({ isOpen }) {
       menuItems = [
         { path: "/pos/home", label: "Overview", icon: Gauge },
         { path: "/pos/transaction", label: "Transaction", icon: ShoppingCart },
+        { path: "/pos/products", label: "Product", icon: Package },
         { path: "/pos/reports", label: "Report", icon: ChartArea },
         { path: "/pos/settings", label: "Settings", icon: Settings },
       ];

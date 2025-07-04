@@ -51,7 +51,7 @@ export default function ProductList({ reload }) {
         setError(true);
       })
       .finally(() => setLoading(false));
-  }, [searchQuery, currentPage]);
+  }, [searchQuery, currentPage, reload]);
 
   // ✅ Input typing
   const handleSearchInputChange = (e) => {
