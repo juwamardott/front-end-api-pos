@@ -10,6 +10,7 @@ import Product from "./pages/POS/Product";
 import Transaction from "./pages/POS/Transaction";
 import Reports from "./pages/POS/Reports";
 import ProductDetail from "./components/POS/ProductDetail";
+import PurchaseOrder from "./pages/Warehouse/PurchaseOrder";
 
 function App() {
   return (
@@ -39,6 +40,7 @@ function App() {
                     path="/warehouse/home"
                     element={<WarehouseDashboard />}
                   />
+                  <Route path="/warehouse/po" element={<PurchaseOrder />} />
                 </Routes>
               </Layout>
             </PrivateRoute>

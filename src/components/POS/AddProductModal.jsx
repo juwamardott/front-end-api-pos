@@ -13,6 +13,8 @@ import toast from "react-hot-toast";
 import axios from "axios";
 import useAuth from "../../store/auth";
 import useProductStore from "../../store/productStore";
+import { useFormik } from "formik";
+import * as Yup from "yup";
 
 export default function AddProductModal({ onClose, onSuccess }) {
   const [name, setName] = useState("");

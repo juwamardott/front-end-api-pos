@@ -338,7 +338,7 @@ export default function ProductList({ reload }) {
                       </p>
                     )}
                   </div>
-                  <Link to={`/product/${encodeId(product.id)}`}>
+                  <Link to={`/pos/product/${encodeId(product.id)}`}>
                     <button className="text-sm bg-indigo-600 hover:bg-indigo-700 text-white px-2 py-2 rounded-lg transition-colors font-medium">
                       Details
                     </button>
@@ -404,7 +404,7 @@ export default function ProductList({ reload }) {
                       <p className="text-xl lg:text-2xl font-bold text-green-600 mb-2">
                         Rp {product.price.toLocaleString("id-ID")}
                       </p>
-                      <Link to={`/product/${encodeId(product.id)}`}>
+                      <Link to={`/pos/product/${encodeId(product.id)}`}>
                         <button className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg transition-colors text-sm font-medium">
                           Details
                         </button>
@@ -462,7 +462,7 @@ export default function ProductList({ reload }) {
                     )}
                   </div>
 
-                  <Link to={`/product/${encodeId(product.id)}`}>
+                  <Link to={`/pos/product/${encodeId(product.id)}`}>
                     <button className="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-2 rounded-lg transition-colors text-sm font-medium">
                       Details
                     </button>

@@ -11,7 +11,6 @@ export default function Login() {
   const API_URL = import.meta.env.VITE_API_BASE_URL;
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [role, setRole] = useState(null);
   const navigate = useNavigate();
   const { login } = useAuth();
 
@@ -38,31 +37,42 @@ export default function Login() {
 
         const user = res.data.data.user;
         const accessToken = res.data.data.access_token;
-        const userRole = user.role.role;
+        const userRole = user.role.role; // e.g. 'Cashier'
+        const level = user.role.level; // e.g. 'regular' / 'superadmin'
         const branch = user.branch.id;
-        setRole(userRole);
+
         login(user, accessToken, branch);
 
+        // Normalize for comparison
         const normalizedRole = userRole?.trim().toLowerCase();
+        const normalizedLevel = level?.trim().toLowerCase();
 
-        if (["cashier", "superadmin cashier"].includes(normalizedRole)) {
+        // Routing logic
+        if (normalizedRole === "cashier") {
           toast.success("Login sebagai Cashier");
           navigate("/pos/home");
-        } else if (
-          ["warehouse", "superadmin warehouse"].includes(normalizedRole)
-        ) {
+        } else if (normalizedRole === "warehouse") {
           toast.success("Login sebagai Warehouse");
           navigate("/warehouse/home");
-        } else if (
-          ["accounting", "superadmin accounting"].includes(normalizedRole)
-        ) {
+        } else if (normalizedRole === "accounting") {
           toast.success("Login sebagai Accounting");
           navigate("/acc/home");
+        } else if (normalizedRole === "admin" && normalizedLevel === "global") {
+          toast.success("Login sebagai Admin");
+          navigate("/admin/dashboard");
         } else {
           toast.error("Role tidak memiliki akses masuk!");
         }
       } catch (error) {
-        toast.error(error?.response?.data?.message || "Terjadi kesalahan");
+        if (error.response?.status === 401) {
+          toast.error("Email atau password salah");
+          formik.setErrors({
+            email: " ",
+            password: "Email atau password salah",
+          });
+        } else {
+          toast.error(error?.response?.data?.message || "Terjadi kesalahan");
+        }
       } finally {
         setIsLoading(false);
       }

@@ -11,69 +11,65 @@ import {
   Sparkles,
   Gauge,
   PackageCheck,
+  User,
 } from "lucide-react";
 import useAuth from "../store/auth";
 export default function Sidebar({ isOpen }) {
   const location = useLocation();
   const currentPath = location.pathname;
   const [hoveredItem, setHoveredItem] = useState(null);
-  const role = useAuth((state) => state.user?.role.id);
-  let menuItems = [];
+  const rawRole = useAuth((state) => state.user?.role?.role);
+  const rawLevel = useAuth((state) => state.user?.role?.level);
 
-  switch (role) {
-    case 1: // Chasier
-      menuItems = [
-        { path: "/pos/home", label: "Dashboard", icon: Home },
-        { path: "/pos/transaction", label: "Transaction", icon: ShoppingCart },
-      ];
-      break;
+  const role = rawRole?.trim().toLowerCase(); // e.g. "cashier"
+  const level = rawLevel?.trim().toLowerCase(); // e.g. "superadmin"
 
-    case 2: // Warehouse
-      menuItems = [
-        { path: "/pos/home", label: "Overview", icon: Gauge },
-        { path: "/pos/transaction", label: "Transaction", icon: ShoppingCart },
-        { path: "/pos/reports", label: "Report", icon: ChartArea },
-        { path: "/pos/settings", label: "Settings", icon: Settings },
-      ];
-      break;
+  const roleKey = `${role}:${level}`;
 
-    case 3: // Accounting
-      menuItems = [
-        { path: "/acc/home", label: "Dashboard", icon: Home },
-        { path: "/acc/reports", label: "Report", icon: ChartArea },
-      ];
-      break;
+  const menuMap = {
+    "cashier:regular": [
+      { path: "/pos/home", label: "Dashboard", icon: Home },
+      { path: "/pos/transaction", label: "Transaction", icon: ShoppingCart },
+    ],
+    "cashier:superadmin": [
+      { path: "/pos/home", label: "Overview", icon: Gauge },
+      { path: "/pos/transaction", label: "Transaction", icon: ShoppingCart },
+      { path: "/pos/products", label: "Product", icon: Package },
+      { path: "/pos/reports", label: "Report", icon: ChartArea },
+      { path: "/pos/settings", label: "Settings", icon: Settings },
+    ],
+    "warehouse:regular": [
+      { path: "/warehouse/home", label: "Overview", icon: Gauge },
+      {
+        path: "/warehouse/po",
+        label: "Purchase Order",
+        icon: Package,
+      },
+      { path: "/warehouse/Receive", label: "Receive", icon: PackageCheck },
+    ],
+    "warehouse:superadmin": [
+      { path: "/warehouse/home", label: "Overview", icon: Gauge },
+      { path: "/warehouse/po", label: "Purchase Order", icon: Package },
+      { path: "/warehouse/Receive", label: "Receive", icon: PackageCheck },
+      { path: "/warehouse/settings", label: "Settings", icon: Settings },
+    ],
+    "accounting:regular": [
+      { path: "/acc/home", label: "Dashboard", icon: Home },
+      { path: "/acc/reports", label: "Report", icon: ChartArea },
+    ],
+    "accounting:superadmin": [
+      { path: "/acc/home", label: "Overview", icon: Gauge },
+      { path: "/acc/reports", label: "Report", icon: ChartArea },
+      { path: "/acc/settings", label: "Settings", icon: Settings },
+    ],
+    "admin:global": [
+      { path: "/admin/dashboard", label: "Admin Panel", icon: Gauge },
+      { path: "/admin/users", label: "Users", icon: User },
+      { path: "/admin/settings", label: "Settings", icon: Settings },
+    ],
+  };
+  const menuItems = menuMap[roleKey] || [];
 
-    case 4: // Superadmin Chasier
-      menuItems = [
-        { path: "/pos/home", label: "Overview", icon: Gauge },
-        { path: "/pos/transaction", label: "Transaction", icon: ShoppingCart },
-        { path: "/pos/products", label: "Product", icon: Package },
-        { path: "/pos/reports", label: "Report", icon: ChartArea },
-        { path: "/pos/settings", label: "Settings", icon: Settings },
-      ];
-      break;
-
-    case 5: // Superadmin Warehouse
-      menuItems = [
-        { path: "/warehouse/home", label: "Overview", icon: Gauge },
-        { path: "/warehouse/po", label: "Purchase Order", icon: Package },
-        { path: "/warehouse/Receive", label: "Receive", icon: PackageCheck },
-        { path: "/warehouse/settings", label: "Settings", icon: Settings },
-      ];
-      break;
-
-    case 6: // Superadmin Accounting
-      menuItems = [
-        { path: "/acc/home", label: "Overview", icon: Gauge },
-        { path: "/acc/reports", label: "Report", icon: ChartArea },
-        { path: "/acc/settings", label: "Settings", icon: Settings },
-      ];
-      break;
-
-    default:
-      menuItems = [{ path: "/home", label: "Dashboard", icon: Home }];
-  }
   const isActive = (path) => currentPath === path;
 
   return (
