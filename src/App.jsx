@@ -11,6 +11,7 @@ import Transaction from "./pages/POS/Transaction";
 import Reports from "./pages/POS/Reports";
 import ProductDetail from "./components/POS/ProductDetail";
 import PurchaseOrder from "./pages/Warehouse/PurchaseOrder";
+import NotificationTester from "./Notification";
 
 function App() {
   return (
@@ -24,6 +25,7 @@ function App() {
 
       <Routes>
         <Route path="/login" element={<Login />} />
+        <Route path="/notification" element={<NotificationTester />} />
         <Route
           path="*"
           element={
